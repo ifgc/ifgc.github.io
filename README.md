@@ -1,2 +1,1 @@
-# ifgc.github.io
-My Website
+# template
