@@ -96,6 +96,7 @@ n<!DOCTYPE HTML>
 							</article>
 
 							<!-- Theatre -->
+							<!-- Theatre -->
 							<article id="Theatre">
 							    <h2 class="portfolio-title">Theatre Design</h2>
 							    <p>
@@ -103,28 +104,45 @@ n<!DOCTYPE HTML>
 							        <br>[Under Construction]
 							        <br>My full portfolio is available here [Under Construction]
 							    </p>
-							    <p><a href="images/CV.pdf" target="_blank">Curriculum Vitae</a></p>
+							    <h3>"She Kills Monsters" (Designs) PLACE HOLDER IMAGES</h3>
 							    <div class="projects">
 							        <div class="project">
-							            <img src="images/project1/image1.jpg" alt="Project 1 Image 1">
-							            <img src="images/project1/image2.jpg" alt="Project 1 Image 2">
-							            <img src="images/project1/image3.jpg" alt="Project 1 Image 3">
+							            <div class="project-images">
+					               			<img src="images/project1/IMG_0620.png" alt="Project 1 Image 1">
+							                <img src="images/project1/IMG_0632.png" alt="Project 1 Image 2">
+							                <img src="images/project1/IMG_0636.png" alt="Project 1 Image 3">
+									<img src="images/project1/IMG_0620.png" alt="Project 1 Image 1">
+							                <img src="images/project1/IMG_0632.png" alt="Project 1 Image 2">
+							                <img src="images/project1/IMG_0636.png" alt="Project 1 Image 3">
+									<img src="images/project1/IMG_0620.png" alt="Project 1 Image 1">
+							                <img src="images/project1/IMG_0632.png" alt="Project 1 Image 2">
+							                <img src="images/project1/IMG_0636.png" alt="Project 1 Image 3">
+								    </div>
 							            <div class="project-title">Project 1</div>
 							        </div>
-							        <div class="project">
-							            <img src="images/project2/image1.jpg" alt="Project 2 Image 1">
-							            <img src="images/project2/image2.jpg" alt="Project 2 Image 2">
-							            <img src="images/project2/image3.jpg" alt="Project 2 Image 3">
+							        <h3>"Airness" (Designs)</h3>
+							            <div class="project-images">
+							                <img src="images/project2/IMG_0299.jpeg" alt="Project 2 Image 1">
+							                <img src="images/project2/IMG_0355.jpeg" alt="Project 2 Image 2">
+							                <img src="images/project2/IMG_0513.jpeg" alt="Project 2 Image 3">
+									<img src="images/project2/IMG_0529.jpeg" alt="Project 2 Image 4">
+							                <img src="images/project2/IMG_0599.png" alt="Project 2 Image 5">
+							                <img src="images/project2/IMG_0610.gif" alt="Project 2 Image 6">
+							            </div>
 							            <div class="project-title">Project 2</div>
 							        </div>
+								<h3>"Airness" (Costumes)</h3>
 							        <div class="project">
-							            <img src="images/project3/image1.jpg" alt="Project 3 Image 1">
-							            <img src="images/project3/image2.jpg" alt="Project 3 Image 2">
-							            <img src="images/project3/image3.jpg" alt="Project 3 Image 3">
+							            <div class="project-images">
+							                <img src="images/project3/image1.jpg" alt="Project 3 Image 1">
+							                <img src="images/project3/image2.jpg" alt="Project 3 Image 2">
+							                <img src="images/project3/image3.jpg" alt="Project 3 Image 3">
+							            </div>
 							            <div class="project-title">Project 3</div>
 							        </div>
 							    </div>
 							</article>
+
 
 							<!-- Styles for Theatre Section -->
 							<style>
@@ -137,20 +155,25 @@ n<!DOCTYPE HTML>
 							    }
 							    .projects {
 							        display: flex;
-							        overflow-x: auto;
+							        flex-direction: column;
 							        gap: 20px;
 							    }
 							    .project {
-							        min-width: 300px;
 							        background: #f4f4f4;
 							        padding: 10px;
 							        border-radius: 10px;
 							        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 							        text-align: center;
 							    }
+							    .project-images {
+							        display: flex;
+							        overflow-x: auto;
+							        gap: 10px;
+							        padding: 10px 0;
+							    }
 							    .project img {
-							        max-width: 100%;
-							        height: auto;
+							        height: 300px; /* Set a fixed height */
+							        width: auto; /* Keep the aspect ratio */
 							        border-radius: 10px;
 							    }
 							    .project-title {
@@ -158,6 +181,8 @@ n<!DOCTYPE HTML>
 							        margin-top: 10px;
 							    }
 							</style>
+
+
 
 						<!-- Contact -->
 							<article id="Contact">
