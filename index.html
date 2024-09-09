@@ -11,6 +11,29 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="icon" href="/favicon.ico" type="image/x-icon">
+		<style>
+			/* CSS for the hover dropdown */
+			.hover-section .content {
+			    max-height: 0;
+			    overflow: hidden;
+			    transition: max-height 0.4s ease-out;
+			}
+		
+			.hover-section:hover .content {
+			    max-height: 100px;
+			}
+		
+			.hover-section h3 {
+			    cursor: pointer;
+			    margin-bottom: 5px;
+			}
+		
+			.hover-section .content {
+			    background-color: #f4f4f4;
+			    padding: 10px;
+			    margin-top: 5px;
+			}
+		</style>
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 	</head>
 	<body class="is-preload">
