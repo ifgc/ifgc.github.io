@@ -14,25 +14,32 @@
 		<style>
 			/* CSS for the hover dropdown */
 			.hover-section .content {
-			    max-height: 0;
-			    overflow: hidden;
-			    transition: max-height 0.4s ease-out;
+			    max-height: 0; /* Completely hidden */
+			    overflow: hidden; /* Hide anything beyond max-height */
+			    transition: max-height 0.4s ease-out; /* Smooth transition */
+			    background-color: transparent; /* Ensure transparency */
+			    color: white; /* Make sure text is visible on dark backgrounds */
+			    padding: 0; /* Remove padding when not expanded */
 			}
-		
+			
+			/* On hover, reveal the content */
 			.hover-section:hover .content {
-			    max-height: 100px;
+			    max-height: 200px; /* Adjust to the content size you need */
+			    padding: 10px; /* Add padding once expanded */
 			}
-		
+			
 			.hover-section h3 {
 			    cursor: pointer;
 			    margin-bottom: 5px;
+			    color: white; /* Ensure the heading is visible */
 			}
-		
+			
+			/* Optional: Add a border or shadow to make content stand out */
 			.hover-section .content {
-			    background-color: transparent;
-			    padding: 10px;
 			    margin-top: 5px;
+			    border-left: 2px solid #fff; /* White border for contrast */
 			}
+
 		</style>
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
 	</head>
