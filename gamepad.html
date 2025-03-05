@@ -184,8 +184,8 @@
         const centerX = canvasWidth / 2;
         const centerY = canvasHeight / 2;
         const hexSize = 50;
-        const extensionLength = 80; // Shortened for better spacing
-        const angleStep = Math.PI / 3;
+        const extensionLength = 80; // Adjusted for better spacing
+        const angleStep = -Math.PI / 3; // NEGATIVE to make the order clockwise
         let points = [];
     
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before redrawing
@@ -211,7 +211,7 @@
         ctx.lineWidth = 3;
         ctx.stroke();
     
-        // Draw extensions with rotated grids (Counterclockwise)
+        // Draw extensions with rotated grids (Clockwise Order)
         const gridLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
     
         for (let i = 0; i < 6; i++) {
@@ -219,7 +219,7 @@
             let midY = (points[i].y + points[(i + 1) % 6].y) / 2;
             let angle = Math.atan2(midY - centerY, midX - centerX);
     
-            // Adjust position for counterclockwise placement
+            // Adjust position for clockwise placement
             let endX = midX + extensionLength * Math.cos(angle);
             let endY = midY + extensionLength * Math.sin(angle);
     
@@ -229,10 +229,11 @@
             ctx.lineTo(endX, endY);
             ctx.stroke();
     
-            // Assign labels based on counterclockwise order
+            // Assign labels based on CLOCKWISE order
             drawGrid(endX, endY, angle, gridLabels[i * 2], gridLabels[i * 2 + 1]);
         }
     }
+
     
     function drawGrid(x, y, angle, label1, label2) {
         const gridWidth = 20;
