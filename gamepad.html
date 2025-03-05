@@ -178,48 +178,82 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        function drawHexagonWithExtensions() {
-            const centerX = 150;
-            const centerY = 150;
-            const hexSize = 50;
-            const extensionLength = 100;
-            const angleStep = Math.PI / 3;
-            let points = [];
+function drawHexagonWithExtensions() {
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+    const hexSize = 50;
+    const extensionLength = 100;
+    const angleStep = Math.PI / 3;
+    let points = [];
 
-            for (let i = 0; i < 6; i++) {
-                let angle = angleStep * i;
-                let x = centerX + hexSize * Math.cos(angle);
-                let y = centerY + hexSize * Math.sin(angle);
-                points.push({ x, y });
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before redrawing
+
+    // Compute hexagon vertices
+    for (let i = 0; i < 6; i++) {
+        let angle = angleStep * i;
+        let x = centerX + hexSize * Math.cos(angle);
+        let y = centerY + hexSize * Math.sin(angle);
+        points.push({ x, y });
+    }
+
+    // Draw hexagon
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'orange';
+    ctx.fill();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Draw extensions with rotated grids
+    for (let i = 0; i < 6; i++) {
+        let midX = (points[i].x + points[(i + 1) % 6].x) / 2;
+        let midY = (points[i].y + points[(i + 1) % 6].y) / 2;
+        let angle = Math.atan2(midY - centerY, midX - centerX);
+        let endX = midX + extensionLength * Math.cos(angle);
+        let endY = midY + extensionLength * Math.sin(angle);
+
+        // Draw extension line
+        ctx.beginPath();
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Draw rotated grid at the end of extension
+        drawGrid(endX, endY, angle);
+    }
+}
+
+        function drawGrid(x, y, angle) {
+            const gridWidth = 20;
+            const gridHeight = 20;
+            const cols = 2;
+            const rows = 4;
+        
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle + Math.PI / 2); // Rotate grid 90 degrees
+        
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    ctx.strokeRect(
+                        i * gridWidth - (cols / 2) * gridWidth,
+                        j * gridHeight - (rows / 2) * gridHeight,
+                        gridWidth,
+                        gridHeight
+                    );
+                }
             }
-
-            ctx.beginPath();
-            ctx.moveTo(points[0].x, points[0].y);
-            for (let i = 1; i < points.length; i++) {
-                ctx.lineTo(points[i].x, points[i].y);
-            }
-            ctx.closePath();
-            ctx.fillStyle = 'orange';
-            ctx.fill();
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 3;
-            ctx.stroke();
-
-            for (let i = 0; i < 6; i++) {
-                let midX = (points[i].x + points[(i + 1) % 6].x) / 2;
-                let midY = (points[i].y + points[(i + 1) % 6].y) / 2;
-                let angle = Math.atan2(midY - centerY, midX - centerX);
-                let endX = midX + extensionLength * Math.cos(angle);
-                let endY = midY + extensionLength * Math.sin(angle);
-
-                ctx.beginPath();
-                ctx.moveTo(midX, midY);
-                ctx.lineTo(endX, endY);
-                ctx.stroke();
-
-                drawGrid(endX, endY, angle);
-            }
+        
+            ctx.restore();
         }
+
 
         function drawGrid(x, y, angle) {
             const gridWidth = 20;
