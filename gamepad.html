@@ -258,9 +258,16 @@
         const cols = 2;  // Two columns per grid
         const rows = 4;  // Four rows per grid
     
+        // Determine if the grid is one of the "bottom" grids
+        const isBottomGrid = Math.abs(angle) > Math.PI / 2; // If angle is > 90° or < -90°, it's bottom
+    
         ctx.save();
         ctx.translate(x, y);
-        ctx.rotate(angle + Math.PI / 2); // Rotate grid 90 degrees
+        ctx.rotate(angle + Math.PI / 2); // Rotate normally
+    
+        if (isBottomGrid) {
+            ctx.rotate(Math.PI); // Flip the bottom grids 180 degrees
+        }
     
         for (let i = 0; i < cols; i++) {
             for (let j = 0; j < rows; j++) {
@@ -285,6 +292,7 @@
     
         ctx.restore();
     }
+
     
     // Draw everything
     drawHexagonWithExtensions();
