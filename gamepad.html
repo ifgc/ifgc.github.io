@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamepad Tester</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #status { margin: 20px; font-size: 20px; color: green; }
+        .gamepad-info { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Gamepad Tester</h1>
+    <p id="status">Connect a USB gamepad and press any button.</p>
+    <div class="gamepad-info">
+        <h2>Axes</h2>
+        <pre id="axes"></pre>
+        <h2>Buttons</h2>
+        <pre id="buttons"></pre>
+    </div>
+    
+    <script>
+        window.addEventListener("gamepadconnected", (event) => {
+            document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
+            updateGamepadState();
+        });
+
+        function updateGamepadState() {
+            let gamepads = navigator.getGamepads();
+            if (gamepads[0]) {
+                let gp = gamepads[0];
+                document.getElementById("axes").innerText = JSON.stringify(gp.axes.map(a => a.toFixed(2)), null, 2);
+                document.getElementById("buttons").innerText = JSON.stringify(gp.buttons.map(b => b.pressed), null, 2);
+            }
+            requestAnimationFrame(updateGamepadState);
+        }
+    </script>
+</body>
+</html>
