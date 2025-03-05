@@ -258,15 +258,18 @@
         const cols = 2;  // Two columns per grid
         const rows = 4;  // Four rows per grid
     
-        // Determine if the grid is one of the "bottom" grids
-        const isBottomGrid = Math.abs(angle) > (4*Math.PI) / 9; // If angle is > 90° or < -90°, it's bottom
+        // List of labels that should be flipped
+        const labelsToFlip = ['I', 'J', 'K', 'L']; // Specify grids that should be flipped
+    
+        // Check if either column label is in the flip list
+        const shouldFlip = labelsToFlip.includes(label1) || labelsToFlip.includes(label2);
     
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(angle + Math.PI / 2); // Rotate normally
     
-        if (isBottomGrid) {
-            ctx.rotate(Math.PI); // Flip the bottom grids 180 degrees
+        if (shouldFlip) {
+            ctx.rotate(Math.PI); // Flip these specific grids 180 degrees
         }
     
         for (let i = 0; i < cols; i++) {
@@ -293,7 +296,6 @@
         ctx.restore();
     }
 
-    
     // Draw everything
     drawHexagonWithExtensions();
 
