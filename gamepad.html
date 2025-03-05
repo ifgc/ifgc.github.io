@@ -222,14 +222,14 @@
         // Apply the remap first
         let remappedLabels = originalLabels.map(label => labelMap[label]);
     
-        // Step 2: Shift each pair 2 grids to the left
+        // Step 2: Shift each pair 2 grids to the RIGHT
         let shiftedLabels = [
-            remappedLabels[4], remappedLabels[5], // E -> moves to first grid
-            remappedLabels[6], remappedLabels[7], // G -> moves to second grid
-            remappedLabels[8], remappedLabels[9], // I -> moves to third grid
-            remappedLabels[10], remappedLabels[11], // K -> moves to fourth grid
-            remappedLabels[0], remappedLabels[1], // A -> moves to fifth grid
-            remappedLabels[2], remappedLabels[3]  // C -> moves to sixth grid
+            remappedLabels[8], remappedLabels[9],  // I -> moves to first grid
+            remappedLabels[10], remappedLabels[11], // K -> moves to second grid
+            remappedLabels[0], remappedLabels[1],  // A -> moves to third grid
+            remappedLabels[2], remappedLabels[3],  // C -> moves to fourth grid
+            remappedLabels[4], remappedLabels[5],  // E -> moves to fifth grid
+            remappedLabels[6], remappedLabels[7]   // G -> moves to sixth grid
         ];
     
         for (let i = 0; i < 6; i++) {
@@ -251,43 +251,7 @@
             drawGrid(endX, endY, angle, shiftedLabels[i * 2], shiftedLabels[i * 2 + 1]);
         }
     }
-    
-    function drawGrid(x, y, angle, label1, label2) {
-        const gridWidth = 20;
-        const gridHeight = 20;
-        const cols = 2;  // Two columns per grid
-        const rows = 4;  // Four rows per grid
-    
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(angle + Math.PI / 2); // Rotate grid 90 degrees
-    
-        for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-                let cellX = i * gridWidth - (cols / 2) * gridWidth;
-                let cellY = j * gridHeight - (rows / 2) * gridHeight;
-    
-                // Draw grid cell
-                ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
-    
-                // Assign labels
-                let colLabel = i === 0 ? label1 : label2; // Left column = label1, Right column = label2
-                let rowLabel = rows - j; // Row numbering bottom to top
-    
-                // Draw label
-                ctx.fillStyle = "black";
-                ctx.font = "12px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(colLabel + rowLabel, cellX + gridWidth / 2, cellY + gridHeight / 2);
-            }
-        }
-    
-        ctx.restore();
-    }
-    
-    // Draw everything
-    drawHexagonWithExtensions();
+
 
 
     </script>
