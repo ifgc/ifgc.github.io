@@ -254,9 +254,8 @@
                 ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
     
                 // Calculate label
-                let colLabel = i === 0 ? label1 : label2; // First column gets label1, second gets label2
+                let colLabel = i === 0 ? label2 : label1; // Now left column is label2, right is label1
                 let rowLabel = rows - j; // Row numbering bottom to top
-    
                 // Draw label
                 ctx.fillStyle = "black";
                 ctx.font = "12px Arial";
