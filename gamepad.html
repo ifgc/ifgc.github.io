@@ -251,7 +251,43 @@
             drawGrid(endX, endY, angle, shiftedLabels[i * 2], shiftedLabels[i * 2 + 1]);
         }
     }
-
+    
+    function drawGrid(x, y, angle, label1, label2) {
+        const gridWidth = 20;
+        const gridHeight = 20;
+        const cols = 2;  // Two columns per grid
+        const rows = 4;  // Four rows per grid
+    
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle + Math.PI / 2); // Rotate grid 90 degrees
+    
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                let cellX = i * gridWidth - (cols / 2) * gridWidth;
+                let cellY = j * gridHeight - (rows / 2) * gridHeight;
+    
+                // Draw grid cell
+                ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
+    
+                // Assign labels
+                let colLabel = i === 0 ? label1 : label2; // Left column = label1, Right column = label2
+                let rowLabel = rows - j; // Row numbering bottom to top
+    
+                // Draw label
+                ctx.fillStyle = "black";
+                ctx.font = "12px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(colLabel + rowLabel, cellX + gridWidth / 2, cellY + gridHeight / 2);
+            }
+        }
+    
+        ctx.restore();
+    }
+    
+    // Draw everything
+    drawHexagonWithExtensions();
 
 
     </script>
