@@ -241,6 +241,17 @@
         const cols = 2;  // Two columns per grid
         const rows = 4;  // Four rows per grid
     
+        // Custom remapping of labels
+        const labelMap = {
+            'A': 'J', 'B': 'I', 'C': 'L', 'D': 'K', 
+            'E': 'B', 'F': 'A', 'G': 'D', 'H': 'C', 
+            'I': 'E', 'J': 'F', 'K': 'H', 'L': 'G'
+        };
+    
+        // Apply label swaps
+        let newLabel1 = labelMap[label1];
+        let newLabel2 = labelMap[label2];
+    
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(angle + Math.PI / 2); // Rotate grid 90 degrees
@@ -253,9 +264,10 @@
                 // Draw grid cell
                 ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
     
-                // Calculate label
-                let colLabel = i === 0 ? label2 : label1; // Now left column is label2, right is label1
+                // Assign swapped labels
+                let colLabel = i === 0 ? newLabel1 : newLabel2; // Left column = newLabel1, Right column = newLabel2
                 let rowLabel = rows - j; // Row numbering bottom to top
+    
                 // Draw label
                 ctx.fillStyle = "black";
                 ctx.font = "12px Arial";
