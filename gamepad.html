@@ -179,78 +179,89 @@
         const ctx = canvas.getContext('2d');
 
     function drawHexagonWithExtensions() {
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const centerX = canvasWidth / 2;
-        const centerY = canvasHeight / 2;
-        const hexSize = 50;
-        const extensionLength = 80; // Adjusted for better spacing
-        const angleStep = -Math.PI / 3; // Negative for clockwise
-        let points = [];
-    
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before redrawing
-    
-        // Compute hexagon vertices
-        for (let i = 0; i < 6; i++) {
-            let angle = angleStep * i;
-            let x = centerX + hexSize * Math.cos(angle);
-            let y = centerY + hexSize * Math.sin(angle);
-            points.push({ x, y });
-        }
-    
-        // Draw hexagon
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) {
-            ctx.lineTo(points[i].x, points[i].y);
-        }
-        ctx.closePath();
-        ctx.fillStyle = 'orange';
-        ctx.fill();
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    
-        // Step 1: Apply the custom remapping first
-        const originalLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
-        const labelMap = {
-            'A': 'J', 'B': 'I', 'C': 'K', 'D': 'L', 
-            'E': 'A', 'F': 'B', 'G': 'C', 'H': 'D', 
-            'I': 'F', 'J': 'E', 'K': 'H', 'L': 'G'
-        };
-    
-        // Apply the remap first
-        let remappedLabels = originalLabels.map(label => labelMap[label]);
-    
-        // Step 2: Shift each pair 2 grids to the RIGHT
-        let shiftedLabels = [
-            remappedLabels[8], remappedLabels[9],  // I -> moves to first grid
-            remappedLabels[10], remappedLabels[11], // K -> moves to second grid
-            remappedLabels[0], remappedLabels[1],  // A -> moves to third grid
-            remappedLabels[2], remappedLabels[3],  // C -> moves to fourth grid
-            remappedLabels[4], remappedLabels[5],  // E -> moves to fifth grid
-            remappedLabels[6], remappedLabels[7]   // G -> moves to sixth grid
-        ];
-    
-        for (let i = 0; i < 6; i++) {
-            let midX = (points[i].x + points[(i + 1) % 6].x) / 2;
-            let midY = (points[i].y + points[(i + 1) % 6].y) / 2;
-            let angle = Math.atan2(midY - centerY, midX - centerX);
-    
-            // Adjust position for clockwise placement
-            let endX = midX + extensionLength * Math.cos(angle);
-            let endY = midY + extensionLength * Math.sin(angle);
-    
-            // Draw extension line
-            ctx.beginPath();
-            ctx.moveTo(midX, midY);
-            ctx.lineTo(endX, endY);
-            ctx.stroke();
-    
-            // Assign labels based on REMAPPED and SHIFTED order
-            drawGrid(endX, endY, angle, shiftedLabels[i * 2], shiftedLabels[i * 2 + 1]);
-        }
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+    const hexSize = 50;
+    const extensionLength = 80;
+    const angleStep = -Math.PI / 3;
+    let points = [];
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Compute hexagon vertices
+    for (let i = 0; i < 6; i++) {
+        let angle = angleStep * i;
+        let x = centerX + hexSize * Math.cos(angle);
+        let y = centerY + hexSize * Math.sin(angle);
+        points.push({ x, y });
     }
+
+    // Draw hexagon
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'orange';
+    ctx.fill();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Step 1: Apply the custom remapping first
+    const originalLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+    const labelMap = {
+        'A': 'J', 'B': 'I', 'C': 'K', 'D': 'L', 
+        'E': 'A', 'F': 'B', 'G': 'C', 'H': 'D', 
+        'I': 'F', 'J': 'E', 'K': 'H', 'L': 'G'
+    };
+
+    // Apply remapping
+    let remappedLabels = originalLabels.map(label => labelMap[label]);
+
+    // Step 2: Shift each pair 2 grids to the RIGHT
+    let shiftedLabels = [
+        remappedLabels[8], remappedLabels[9],  // I -> moves to first grid
+        remappedLabels[10], remappedLabels[11], // K -> moves to second grid
+        remappedLabels[0], remappedLabels[1],  // A -> moves to third grid
+        remappedLabels[2], remappedLabels[3],  // C -> moves to fourth grid
+        remappedLabels[4], remappedLabels[5],  // E -> moves to fifth grid
+        remappedLabels[6], remappedLabels[7]   // G -> moves to sixth grid
+    ];
+
+    // Grid numbering (AB=1, CD=2, ..., KL=6)
+    const gridNumbers = [1, 2, 3, 4, 5, 6];
+
+    for (let i = 0; i < 6; i++) {
+        let midX = (points[i].x + points[(i + 1) % 6].x) / 2;
+        let midY = (points[i].y + points[(i + 1) % 6].y) / 2;
+        let angle = Math.atan2(midY - centerY, midX - centerX);
+
+        let endX = midX + extensionLength * Math.cos(angle);
+        let endY = midY + extensionLength * Math.sin(angle);
+
+        // Draw extension line
+        ctx.beginPath();
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Assign labels based on REMAPPED and SHIFTED order
+        drawGrid(endX, endY, angle, shiftedLabels[i * 2], shiftedLabels[i * 2 + 1]);
+
+        // Draw grid number next to each grid
+        let numberX = endX + 20 * Math.cos(angle);
+        let numberY = endY + 20 * Math.sin(angle);
+
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(gridNumbers[i], numberX, numberY);
+    }
+}
     
 function drawGrid(x, y, angle, label1, label2) {
     const gridWidth = 20;
@@ -321,22 +332,36 @@ function drawGrid(x, y, angle, label1, label2) {
         document.getElementById("status").innerText = `Next Target: ${gameState.targetGrid}${gameState.targetLevel}`;
     }
 
-    function checkGameState() {
-        if (!gameState.loaded) {
-            alert("You must load first!");
-            resetGame();
-            return;
-        }
-        if (!gameState.selectedGrid || !gameState.selectedLevel) {
-            alert("You must select a grid and level before scoring!");
-            resetGame();
-            return;
-        }
-        if (gameState.selectedGrid !== gameState.targetGrid || gameState.selectedLevel !== gameState.targetLevel) {
-            alert("Incorrect grid or level! Game Over.");
-            resetGame();
-            return;
-        }
+        function checkGameState() {
+            if (!gameState.loaded) {
+                alert("You must load first!");
+                resetGame();
+                return;
+            }
+            if (!gameState.selectedGridNumber || !gameState.selectedLevel) {
+                alert("You must select a grid and level before scoring!");
+                resetGame();
+                return;
+            }
+            if (gameState.selectedGridNumber !== gameState.targetGridNumber || gameState.selectedLevel !== gameState.targetLevel) {
+                alert("Incorrect grid or level! Game Over.");
+                resetGame();
+                return;
+            }
+        
+            // Score the grid cell
+            let cellId = `${gameState.targetGrid}${gameState.selectedLevel}`;
+            if (!gameState.gridState[cellId]) {
+                gameState.gridState[cellId] = true;
+                colorGridCell(gameState.targetGrid, gameState.selectedLevel);
+            } else {
+                alert("Grid is full! Game Over.");
+                resetGame();
+                return;
+            }
+    
+        generateNewTarget();
+    }
 
         // Score the grid cell
         let cellId = `${gameState.selectedGrid}${gameState.selectedLevel}`;
