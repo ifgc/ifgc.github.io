@@ -254,26 +254,6 @@ function drawHexagonWithExtensions() {
             ctx.restore();
         }
 
-
-        function drawGrid(x, y, angle) {
-            const gridWidth = 20;
-            const gridHeight = 20;
-            const cols = 2;
-            const rows = 4;
-
-            ctx.save();
-            ctx.translate(x, y);
-            ctx.rotate(angle);
-
-            for (let i = 0; i < cols; i++) {
-                for (let j = 0; j < rows; j++) {
-                    ctx.strokeRect(i * gridWidth - (cols / 2) * gridWidth, j * gridHeight - (rows / 2) * gridHeight, gridWidth, gridHeight);
-                }
-            }
-
-            ctx.restore();
-        }
-
         drawHexagonWithExtensions();
     </script>
 </body>
