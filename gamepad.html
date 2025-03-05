@@ -231,10 +231,11 @@ function drawHexagonWithExtensions() {
 }
 
         function drawGrid(x, y, angle) {
-            const gridWidth = 25;
-            const gridHeight = 25;
-            const cols = 2;
-            const rows = 4;
+            const gridWidth = 20;
+            const gridHeight = 20;
+            const cols = 2;  // Two columns per grid
+            const rows = 4;  // Four rows per grid
+            const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
         
             ctx.save();
             ctx.translate(x, y);
@@ -242,17 +243,27 @@ function drawHexagonWithExtensions() {
         
             for (let i = 0; i < cols; i++) {
                 for (let j = 0; j < rows; j++) {
-                    ctx.strokeRect(
-                        i * gridWidth - (cols / 2) * gridWidth,
-                        j * gridHeight - (rows / 2) * gridHeight,
-                        gridWidth,
-                        gridHeight
-                    );
+                    let cellX = i * gridWidth - (cols / 2) * gridWidth;
+                    let cellY = j * gridHeight - (rows / 2) * gridHeight;
+        
+                    // Draw grid cell
+                    ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
+        
+                    // Calculate label
+                    let label = letters[i] + (rows - j); // Assign column letter and row number
+        
+                    // Draw label
+                    ctx.fillStyle = "black";
+                    ctx.font = "12px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(label, cellX + gridWidth / 2, cellY + gridHeight / 2);
                 }
             }
         
             ctx.restore();
         }
+
 
         drawHexagonWithExtensions();
     </script>
