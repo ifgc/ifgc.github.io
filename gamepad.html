@@ -301,5 +301,119 @@ function drawGrid(x, y, angle, label1, label2) {
 
 
     </script>
+    <script>
+    let gameState = {
+        selectedGrid: null,
+        selectedLevel: null,
+        loaded: false,
+        targetGrid: null,
+        targetLevel: null,
+        gridState: {}, // Tracks which grid cells have been scored
+    };
+
+    function generateNewTarget() {
+        // Pick a random grid and level as the next target
+        const grids = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        const levels = [1, 2, 3, 4];
+        gameState.targetGrid = grids[Math.floor(Math.random() * grids.length)];
+        gameState.targetLevel = levels[Math.floor(Math.random() * levels.length)];
+        
+        document.getElementById("status").innerText = `Next Target: ${gameState.targetGrid}${gameState.targetLevel}`;
+    }
+
+    function checkGameState() {
+        if (!gameState.loaded) {
+            alert("You must load first!");
+            resetGame();
+            return;
+        }
+        if (!gameState.selectedGrid || !gameState.selectedLevel) {
+            alert("You must select a grid and level before scoring!");
+            resetGame();
+            return;
+        }
+        if (gameState.selectedGrid !== gameState.targetGrid || gameState.selectedLevel !== gameState.targetLevel) {
+            alert("Incorrect grid or level! Game Over.");
+            resetGame();
+            return;
+        }
+
+        // Score the grid cell
+        let cellId = `${gameState.selectedGrid}${gameState.selectedLevel}`;
+        if (!gameState.gridState[cellId]) {
+            gameState.gridState[cellId] = true;
+            colorGridCell(gameState.selectedGrid, gameState.selectedLevel);
+        } else {
+            alert("Grid is full! Game Over.");
+            resetGame();
+            return;
+        }
+
+        // Success! Generate new target.
+        generateNewTarget();
+    }
+
+    function resetGame() {
+        gameState = {
+            selectedGrid: null,
+            selectedLevel: null,
+            loaded: false,
+            targetGrid: null,
+            targetLevel: null,
+            gridState: {}
+        };
+        document.getElementById("status").innerText = "Game Over! Press any button to restart.";
+    }
+
+    function colorGridCell(grid, level) {
+        let cellId = `${grid}${level}`;
+        let cells = document.querySelectorAll(`.grid-cell[data-grid="${grid}"][data-level="${level}"]`);
+        cells.forEach(cell => cell.style.backgroundColor = "green");
+    }
+
+    window.addEventListener("gamepadconnected", (event) => {
+        document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
+        generateNewTarget(); // Start with the first target
+        updateGamepadState();
+    });
+
+    function updateGamepadState() {
+        let gamepads = navigator.getGamepads();
+        if (gamepads[0]) {
+            let gp = gamepads[0];
+
+            // Set levels with buttons 5, 6, 7, 11
+            if (gp.buttons[4].pressed) gameState.selectedLevel = 1;
+            if (gp.buttons[5].pressed) gameState.selectedLevel = 2;
+            if (gp.buttons[6].pressed) gameState.selectedLevel = 3;
+            if (gp.buttons[10].pressed) gameState.selectedLevel = 4;
+
+            // Load with Button 2
+            if (gp.buttons[1].pressed) {
+                gameState.loaded = true;
+                document.getElementById("status").innerText = "Loaded!";
+            }
+
+            // Score with Button 1
+            if (gp.buttons[0].pressed) {
+                checkGameState();
+            }
+
+            // Select grid using the hat switch
+            let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
+            let hatGrids = {
+                "-1.00": "A", "-0.71": "B", "-0.43": "C", "-0.14": "D",
+                "3.92": "E", "0.14": "F", "0.43": "G", "0.71": "H",
+                "1.00": "I"
+            };
+            if (hatGrids[pov]) {
+                gameState.selectedGrid = hatGrids[pov];
+                document.getElementById("status").innerText = `Grid Selected: ${gameState.selectedGrid}`;
+            }
+        }
+        requestAnimationFrame(updateGamepadState);
+    }
+</script>
+
 </body>
 </html>
