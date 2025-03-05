@@ -259,7 +259,7 @@
         const rows = 4;  // Four rows per grid
     
         // Determine if the grid is one of the "bottom" grids
-        const isBottomGrid = Math.abs(angle) > (5*Math.PI) / 9; // If angle is > 90° or < -90°, it's bottom
+        const isBottomGrid = Math.abs(angle) > (4*Math.PI) / 9; // If angle is > 90° or < -90°, it's bottom
     
         ctx.save();
         ctx.translate(x, y);
