@@ -185,7 +185,7 @@
         const centerY = canvasHeight / 2;
         const hexSize = 50;
         const extensionLength = 80; // Adjusted for better spacing
-        const angleStep = -Math.PI / 3; // NEGATIVE to make the order clockwise
+        const angleStep = -Math.PI / 3; // Negative for clockwise
         let points = [];
     
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas before redrawing
@@ -211,8 +211,26 @@
         ctx.lineWidth = 3;
         ctx.stroke();
     
-        // Draw extensions with rotated grids (Clockwise Order)
-        const gridLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        // Step 1: Apply the custom remapping first
+        const originalLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        const labelMap = {
+            'A': 'J', 'B': 'I', 'C': 'L', 'D': 'K', 
+            'E': 'B', 'F': 'A', 'G': 'D', 'H': 'C', 
+            'I': 'F', 'J': 'E', 'K': 'H', 'L': 'G'
+        };
+    
+        // Apply the remap first
+        let remappedLabels = originalLabels.map(label => labelMap[label]);
+    
+        // Step 2: Shift each pair 2 grids to the left
+        let shiftedLabels = [
+            remappedLabels[4], remappedLabels[5], // E -> moves to first grid
+            remappedLabels[6], remappedLabels[7], // G -> moves to second grid
+            remappedLabels[8], remappedLabels[9], // I -> moves to third grid
+            remappedLabels[10], remappedLabels[11], // K -> moves to fourth grid
+            remappedLabels[0], remappedLabels[1], // A -> moves to fifth grid
+            remappedLabels[2], remappedLabels[3]  // C -> moves to sixth grid
+        ];
     
         for (let i = 0; i < 6; i++) {
             let midX = (points[i].x + points[(i + 1) % 6].x) / 2;
@@ -229,28 +247,16 @@
             ctx.lineTo(endX, endY);
             ctx.stroke();
     
-            // Assign labels based on CLOCKWISE order
-            drawGrid(endX, endY, angle, gridLabels[i * 2], gridLabels[i * 2 + 1]);
+            // Assign labels based on REMAPPED and SHIFTED order
+            drawGrid(endX, endY, angle, shiftedLabels[i * 2], shiftedLabels[i * 2 + 1]);
         }
     }
-
     
     function drawGrid(x, y, angle, label1, label2) {
         const gridWidth = 20;
         const gridHeight = 20;
         const cols = 2;  // Two columns per grid
         const rows = 4;  // Four rows per grid
-    
-        // Custom remapping of labels
-        const labelMap = {
-            'A': 'J', 'B': 'I', 'C': 'L', 'D': 'K', 
-            'E': 'B', 'F': 'A', 'G': 'D', 'H': 'C', 
-            'I': 'F', 'J': 'E', 'K': 'H', 'L': 'G'
-        };
-    
-        // Apply label swaps
-        let newLabel1 = labelMap[label1];
-        let newLabel2 = labelMap[label2];
     
         ctx.save();
         ctx.translate(x, y);
@@ -264,8 +270,8 @@
                 // Draw grid cell
                 ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
     
-                // Assign swapped labels
-                let colLabel = i === 0 ? newLabel1 : newLabel2; // Left column = newLabel1, Right column = newLabel2
+                // Assign labels
+                let colLabel = i === 0 ? label1 : label2; // Left column = label1, Right column = label2
                 let rowLabel = rows - j; // Row numbering bottom to top
     
                 // Draw label
@@ -282,6 +288,7 @@
     
     // Draw everything
     drawHexagonWithExtensions();
+
 
     </script>
 </body>
