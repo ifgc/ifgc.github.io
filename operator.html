@@ -142,37 +142,65 @@
               });
           
               function updateGamepadState() {
-                  let gamepads = navigator.getGamepads();
-                  if (gamepads[0]) {
-                      let gp = gamepads[0];
-          
-                      // Update axes and slider
-                      document.getElementById("axis-xy").innerText = `(${gp.axes[0].toFixed(2)}, ${(-gp.axes[1]).toFixed(2)})`;
-                      document.getElementById("slider").innerText = gp.axes[6] ? (-gp.axes[6]).toFixed(2) : "N/A";
-          
-                      // Update yaw indicator
-                      let wAxis = gp.axes[5] ? gp.axes[5].toFixed(2) : "0.00";
-                      document.getElementById("yaw-indicator").style.transform = `rotate(${(-wAxis) * 45}deg)`;
-          
-                      // Update buttons
-                      gp.buttons.forEach((btn, index) => {
-                          let btnElement = document.getElementById(`btn-${index + 1}`);
-                          if (btnElement) {
-                              btnElement.classList.toggle("active", btn.pressed);
-                          }
-                      });
-          
-                      // Update hat switch
-                      document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
-                      let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
-                      if (hatPositions[pov]) {
-                          document.getElementById(hatPositions[pov]).classList.add("active");
-                      } else {
-                          document.getElementById("hat-5").classList.add("active");
-                      }
-                  }
-                  requestAnimationFrame(updateGamepadState);
-              }
+                let gamepads = navigator.getGamepads();
+                if (!gamepads || !gamepads[0]) return;
+            
+                let gp = gamepads[0];
+            
+                // Always update gamepad UI, even if the game is stopped
+                document.getElementById("axis-xy").innerText = `(${gp.axes[0].toFixed(2)}, ${(-gp.axes[1]).toFixed(2)})`;
+                document.getElementById("slider").innerText = gp.axes[6] ? (-gp.axes[6]).toFixed(2) : "N/A";
+                let wAxis = gp.axes[5] ? gp.axes[5].toFixed(2) : "0.00";
+                document.getElementById("yaw-indicator").style.transform = `rotate(${(-wAxis) * 45}deg)`;
+            
+                gp.buttons.forEach((btn, index) => {
+                    let btnElement = document.getElementById(`btn-${index + 1}`);
+                    if (btnElement) {
+                        btnElement.classList.toggle("active", btn.pressed);
+                    }
+                });
+            
+                document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
+                let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
+                if (hatPositions[pov]) {
+                    document.getElementById(hatPositions[pov]).classList.add("active");
+                } else {
+                    document.getElementById("hat-5").classList.add("active");
+                }
+            
+                // If game is running, check game logic
+                if (gameRunning) {
+                    if (gp.buttons[4].pressed) gameState.selectedLevel = 1;
+                    if (gp.buttons[5].pressed) gameState.selectedLevel = 2;
+                    if (gp.buttons[6].pressed) gameState.selectedLevel = 3;
+                    if (gp.buttons[10].pressed) gameState.selectedLevel = 4;
+            
+                    safeUpdateText("selected-level", gameState.selectedLevel || "None");
+            
+                    if (gp.buttons[1].pressed) {
+                        gameState.loaded = true;
+                        safeUpdateText("status", "Loaded!");
+                    }
+            
+                    // Fix: Call checkGameState() only once per button press
+                    if (gp.buttons[0].pressed) {
+                        if (!buttonState.scoreButton) { // If button was not already pressed
+                            checkGameState();
+                            buttonState.scoreButton = true; // Mark button as pressed
+                        }
+                    } else {
+                        buttonState.scoreButton = false; // Reset when button is released
+                    }
+            
+                    if (hatGrids[pov]) {
+                        gameState.selectedGrid = hatGrids[pov];
+                        safeUpdateText("selected-grid", gameState.selectedGrid);
+                    }
+                }
+            
+                requestAnimationFrame(updateGamepadState);
+            }
+
           </script>
         </div>
         
@@ -451,6 +479,11 @@ function drawGrid(x, y, angle, label1, label2) {
         correctScore: 0 // New tracking for correct placements
     };
 
+    let buttonState = {
+        scoreButton: false, // Tracks whether button 1 has already been pressed
+    };
+
+
 
     function generateNewTarget() {
         // Pick a random grid and level as the next target
@@ -542,8 +575,14 @@ function drawGrid(x, y, angle, label1, label2) {
             }
     
             if (gp.buttons[0].pressed) {
-                checkGameState();
-            }
+                if (!buttonState.scoreButton) { // If button was not already pressed
+                    checkGameState();
+                    buttonState.scoreButton = true; // Mark button as pressed
+                }
+                } else {
+                    buttonState.scoreButton = false; // Reset when button is released
+                }
+
     
             if (hatGrids[pov]) {
                 gameState.selectedGrid = hatGrids[pov];
