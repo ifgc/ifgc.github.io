@@ -318,46 +318,69 @@ function drawGrid(x, y, angle, label1, label2) {
     </script>
     <script>
     let hatSwitchMap = "left"; // Default to left mapping
+    
     const hatGrids = {
         left: { "-1.00": "A", "-0.71": "C", "-0.43": "E", "-0.14": "G", "3.92": "I", "0.14": "K" },
         right: { "-1.00": "B", "-0.71": "D", "-0.43": "F", "-0.14": "H", "3.92": "J", "0.14": "L" }
     };
     
+    const hatPositions = {
+        "-1.00": "hat-1",
+        "-0.71": "hat-2",
+        "-0.43": "hat-3",
+        "-0.14": "hat-4",
+        "3.92": "hat-5", // Neutral
+        "0.14": "hat-6",
+        "0.43": "hat-7",
+        "0.71": "hat-8",
+        "1.00": "hat-9"
+    };
+    
     function updateHatGridSelection(pov) {
-        let closestValue = Object.keys(hatGrids[hatSwitchMap])
-            .reduce((prev, curr) => Math.abs(curr - pov) < Math.abs(prev - pov) ? curr : prev);
-        
-        if (hatGrids[hatSwitchMap][closestValue]) {
-            gameState.selectedGrid = hatGrids[hatSwitchMap][closestValue];
+        // Ensure POV value is correctly rounded and mapped
+        let roundedPov = (Math.round(pov * 100) / 100).toFixed(2);
+    
+        if (hatGrids[hatSwitchMap][roundedPov]) {
+            gameState.selectedGrid = hatGrids[hatSwitchMap][roundedPov];
             safeUpdateText("selected-grid", gameState.selectedGrid);
         } else {
-            // Default to center if unrecognized
+            // Default to neutral if no match found
             gameState.selectedGrid = hatGrids[hatSwitchMap]["3.92"];
             safeUpdateText("selected-grid", gameState.selectedGrid);
         }
+    }
+    
+    function updateGamepadState() {
+        let gamepads = navigator.getGamepads();
+        if (!gamepads || !gamepads[0]) return;
+    
+        let gp = gamepads[0];
+    
+        // Toggle between left and right hat mappings using buttons 3 and 4
+        if (gp.buttons[2].pressed) hatSwitchMap = "left";
+        if (gp.buttons[3].pressed) hatSwitchMap = "right";
+    
+        // Read hat switch
+        let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
+    
+        // Update hat switch UI
+        document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
+        if (hatPositions[pov]) {
+            document.getElementById(hatPositions[pov]).classList.add("active");
+        } else {
+            document.getElementById("hat-5").classList.add("active"); // Default to center
+        }
+    
+        // Update Grid Selection based on hat switch
+        updateHatGridSelection(pov);
+    
+        requestAnimationFrame(updateGamepadState);
     }
     
     window.addEventListener("gamepadconnected", (event) => {
         document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
         updateGamepadState();
     });
-    
-    function updateGamepadState() {
-        let gamepads = navigator.getGamepads();
-        if (!gamepads || !gamepads[0]) return;
-        
-        let gp = gamepads[0];
-    
-        // Toggle between left and right mapping using buttons 3 and 4
-        if (gp.buttons[2].pressed) hatSwitchMap = "left";
-        if (gp.buttons[3].pressed) hatSwitchMap = "right";
-    
-        // Get hat switch value, round it to nearest expected value
-        let pov = gp.axes[9] ? (Math.round(gp.axes[9] * 10) / 10).toFixed(2) : "3.92";
-        updateHatGridSelection(pov);
-    
-        requestAnimationFrame(updateGamepadState);
-    }
 
 
 
