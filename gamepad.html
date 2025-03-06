@@ -499,23 +499,6 @@ function drawGrid(x, y, angle, label1, label2) {
         generateNewTarget();
     }
 
-    
-        // Score the grid cell
-        let cellId = `${gameState.selectedGrid}${gameState.selectedLevel}`;
-        if (!gameState.gridState[cellId]) {
-            gameState.gridState[cellId] = true;
-            colorGridCell(gameState.selectedGrid, gameState.selectedLevel);
-        } else {
-            document.getElementById("status").innerText = "Grid is full! Game Over.";
-            resetGame();
-            return;
-        }
-    
-        // Success! Generate new target.
-        document.getElementById("status").innerText = `Success! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
-        generateNewTarget();
-    }
-
 
 
     function resetGame() {
