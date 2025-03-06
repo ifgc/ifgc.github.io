@@ -318,69 +318,62 @@ function drawGrid(x, y, angle, label1, label2) {
     </script>
     <script>
     let hatSwitchMap = "left"; // Default to left mapping
-    
     const hatGrids = {
         left: { "-1.00": "A", "-0.71": "C", "-0.43": "E", "-0.14": "G", "3.92": "I", "0.14": "K" },
         right: { "-1.00": "B", "-0.71": "D", "-0.43": "F", "-0.14": "H", "3.92": "J", "0.14": "L" }
     };
     
-    const hatPositions = {
-        "-1.00": "hat-1",
-        "-0.71": "hat-2",
-        "-0.43": "hat-3",
-        "-0.14": "hat-4",
-        "3.92": "hat-5", // Neutral
-        "0.14": "hat-6",
-        "0.43": "hat-7",
-        "0.71": "hat-8",
-        "1.00": "hat-9"
-    };
-    
     function updateHatGridSelection(pov) {
-        // Ensure POV value is correctly rounded and mapped
-        let roundedPov = (Math.round(pov * 100) / 100).toFixed(2);
-    
-        if (hatGrids[hatSwitchMap][roundedPov]) {
-            gameState.selectedGrid = hatGrids[hatSwitchMap][roundedPov];
-            safeUpdateText("selected-grid", gameState.selectedGrid);
-        } else {
-            // Default to neutral if no match found
-            gameState.selectedGrid = hatGrids[hatSwitchMap]["3.92"];
+        if (hatGrids[hatSwitchMap][pov]) {
+            gameState.selectedGrid = hatGrids[hatSwitchMap][pov];
             safeUpdateText("selected-grid", gameState.selectedGrid);
         }
-    }
-    
-    function updateGamepadState() {
-        let gamepads = navigator.getGamepads();
-        if (!gamepads || !gamepads[0]) return;
-    
-        let gp = gamepads[0];
-    
-        // Toggle between left and right hat mappings using buttons 3 and 4
-        if (gp.buttons[2].pressed) hatSwitchMap = "left";
-        if (gp.buttons[3].pressed) hatSwitchMap = "right";
-    
-        // Read hat switch
-        let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
-    
-        // Update hat switch UI
-        document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
-        if (hatPositions[pov]) {
-            document.getElementById(hatPositions[pov]).classList.add("active");
-        } else {
-            document.getElementById("hat-5").classList.add("active"); // Default to center
-        }
-    
-        // Update Grid Selection based on hat switch
-        updateHatGridSelection(pov);
-    
-        requestAnimationFrame(updateGamepadState);
     }
     
     window.addEventListener("gamepadconnected", (event) => {
         document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
         updateGamepadState();
     });
+    function getGridNumber(gridLetter) {
+      const gridMapping = {
+          'A': 1, 'B': 1, 
+          'C': 2, 'D': 2, 
+          'E': 3, 'F': 3, 
+          'G': 4, 'H': 4, 
+          'I': 5, 'J': 5, 
+          'K': 6, 'L': 6
+      };
+      return gridMapping[gridLetter] || null;
+  }
+
+    function checkGameState() {
+      if (!gameState.loaded) {
+          document.getElementById("status").innerText = "You must load first!";
+          resetGame();
+          return;
+      }
+      
+      if (!gameState.selectedLevel) {
+          document.getElementById("status").innerText = "You must select a level before scoring!";
+          resetGame();
+          return;
+      }
+  
+      // Extract target number (1-6) from the grid
+      const targetGridNumber = getGridNumber(gameState.targetGrid);
+      const selectedGridNumber = getGridNumber(gameState.selectedGrid);
+  
+      // Check only level and grid number (ignoring letter)
+      if (gameState.selectedLevel !== gameState.targetLevel || selectedGridNumber !== targetGridNumber) {
+          document.getElementById("status").innerText = `Incorrect! Target was ${gameState.targetGrid}${gameState.targetLevel}, but selected ${gameState.selectedGrid}${gameState.selectedLevel}`;
+          resetGame();
+          return;
+      }
+  
+      // Success! Score and generate new target.
+      document.getElementById("status").innerText = `Success! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
+      generateNewTarget();
+  }
 
 
 
@@ -472,22 +465,22 @@ function drawGrid(x, y, angle, label1, label2) {
             resetGame();
             return;
         }
-        if (!gameState.selectedLevel) {
-            document.getElementById("status").innerText = "You must select a level before scoring!";
+        if (!gameState.selectedGrid || !gameState.selectedLevel) {
+            document.getElementById("status").innerText = "You must select a grid and level before scoring!";
             resetGame();
             return;
         }
-        if (gameState.selectedLevel !== gameState.targetLevel) {
-            document.getElementById("status").innerText = `Incorrect Level! Target level was ${gameState.targetLevel}, but selected ${gameState.selectedLevel}`;
+        if (gameState.selectedGrid !== gameState.targetGrid || gameState.selectedLevel !== gameState.targetLevel) {
+            document.getElementById("status").innerText = `Incorrect! Target was ${gameState.targetGrid}${gameState.targetLevel}, but selected ${gameState.selectedGrid}${gameState.selectedLevel}`;
             resetGame();
             return;
         }
     
-        // Score in the target grid at the correct level
-        let cellId = `${gameState.targetGrid}${gameState.selectedLevel}`;
+        // Score the grid cell
+        let cellId = `${gameState.selectedGrid}${gameState.selectedLevel}`;
         if (!gameState.gridState[cellId]) {
             gameState.gridState[cellId] = true;
-            colorGridCell(gameState.targetGrid, gameState.selectedLevel);
+            colorGridCell(gameState.selectedGrid, gameState.selectedLevel);
         } else {
             document.getElementById("status").innerText = "Grid is full! Game Over.";
             resetGame();
@@ -666,3 +659,5 @@ function drawGrid(x, y, angle, label1, label2) {
 
 </body>
 </html>
+
+
