@@ -188,24 +188,24 @@
         const ctx = canvas.getContext('2d');
 
     function drawHexagonWithExtensions() {
-    const canvasWidth = canvas.width;
-    const canvasHeight = canvas.height;
-    const centerX = canvasWidth / 2;
-    const centerY = canvasHeight / 2;
-    const hexSize = 50;
-    const extensionLength = 80;
-    const angleStep = -Math.PI / 3;
-    let points = [];
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Compute hexagon vertices
-    for (let i = 0; i < 6; i++) {
-        let angle = angleStep * i;
-        let x = centerX + hexSize * Math.cos(angle);
-        let y = centerY + hexSize * Math.sin(angle);
-        points.push({ x, y });
-    }
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+        const hexSize = 50;
+        const extensionLength = 80;
+        const angleStep = -Math.PI / 3;
+        let points = [];
+    
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+        // Compute hexagon vertices
+        for (let i = 0; i < 6; i++) {
+            let angle = angleStep * i;
+            let x = centerX + hexSize * Math.cos(angle);
+            let y = centerY + hexSize * Math.sin(angle);
+            points.push({ x, y });
+        }
 
     // Draw hexagon
     ctx.beginPath();
@@ -352,32 +352,32 @@ function drawGrid(x, y, angle, label1, label2) {
   }
 
     function checkGameState() {
-      if (!gameState.loaded) {
-          document.getElementById("status").innerText = "You must load first!";
-          return;
-      }
-      
-      if (!gameState.selectedLevel) {
-          document.getElementById("status").innerText = "You must select a level before scoring!";
-          return;
-      }
-  
-      // ✅ Extract target number (1-6) from the grid
-      const targetGridNumber = getGridNumber(gameState.targetGrid);
-      const selectedGridNumber = getGridNumber(gameState.selectedGrid);
-  
-      // ✅ Check only level and grid number (ignoring letter)
-      if (gameState.selectedLevel !== gameState.targetLevel || selectedGridNumber !== targetGridNumber) {
-          document.getElementById("status").innerText = `Incorrect! Target was ${gameState.targetGrid}${gameState.targetLevel}, but selected ${gameState.selectedGrid}${gameState.selectedLevel}`;
-          return;
-      }
-  
-      // Success! Score and generate new target.
-      document.getElementById("status").innerText = `Success! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
-      generateNewTarget();
-  }
-
-
+        if (!gameState.loaded) {
+            document.getElementById("status").innerText = "You must load first!";
+            return;
+        }
+        if (!gameState.selectedLevel) {
+            document.getElementById("status").innerText = "You must select a level before scoring!";
+            return;
+        }
+    
+        gameState.totalScore++; // Always increase total score
+        document.getElementById("total-score").innerText = gameState.totalScore; // Update UI
+    
+        let isCorrect = gameState.selectedGrid === gameState.targetGrid && gameState.selectedLevel === gameState.targetLevel;
+        
+        if (isCorrect) {
+            gameState.correctScore++; // Increase correct score if correct
+            document.getElementById("correct-score").innerText = gameState.correctScore; // Update UI
+            colorGridCell(gameState.selectedGrid, gameState.selectedLevel, true);
+            document.getElementById("status").innerText = `Correct! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
+        } else {
+            colorGridCell(gameState.selectedGrid, gameState.selectedLevel, false);
+            document.getElementById("status").innerText = `Wrong! You scored at ${gameState.selectedGrid}${gameState.selectedLevel} instead of ${gameState.targetGrid}${gameState.targetLevel}.`;
+        }
+    
+        generateNewTarget(); // Always move to the next target
+    }
 
 
     let gameRunning = false;
@@ -465,35 +465,6 @@ function drawGrid(x, y, angle, label1, label2) {
     }
 
 
-    function checkGameState() {
-        if (!gameState.loaded) {
-            document.getElementById("status").innerText = "You must load first!";
-           
-            return;
-        }
-        if (!gameState.selectedGrid || !gameState.selectedLevel) {
-            document.getElementById("status").innerText = "You must select a grid and level before scoring!";
-   
-            return;
-        }
-    
-        gameState.totalScore++; // Always increment total score
-    
-        let isCorrect = gameState.selectedGrid === gameState.targetGrid && gameState.selectedLevel === gameState.targetLevel;
-        
-        if (isCorrect) {
-            gameState.correctScore++; // Only increment correct score if correct
-            colorGridCell(gameState.selectedGrid, gameState.selectedLevel, true); // Color correct cell
-            document.getElementById("status").innerText = `Correct! Total: ${gameState.totalScore}, Correct: ${gameState.correctScore}`;
-        } else {
-            colorGridCell(gameState.selectedGrid, gameState.selectedLevel, false); // Mark incorrect cell
-            document.getElementById("status").innerText = `Wrong! You scored at ${gameState.selectedGrid}${gameState.selectedLevel} instead of ${gameState.targetGrid}${gameState.targetLevel}. Total: ${gameState.totalScore}, Correct: ${gameState.correctScore}`;
-        }
-    
-        generateNewTarget(); // Always generate a new target after an attempt
-    }
-
-
 
 
     function resetGame() {
@@ -503,11 +474,18 @@ function drawGrid(x, y, angle, label1, label2) {
             loaded: false,
             targetGrid: null,
             targetLevel: null,
-            gridState: {}
+            gridState: {},
+            totalScore: 0, // Reset total score
+            correctScore: 0 // Reset correct score
         };
+    
+        // Update UI
+        document.getElementById("total-score").innerText = gameState.totalScore;
+        document.getElementById("correct-score").innerText = gameState.correctScore;
         document.getElementById("status").innerText = "Game Over! Press Start to play again.";
-        document.getElementById("resetGameButton").style.display = "block"; // Show Reset button
+        document.getElementById("resetGameButton").style.display = "block";
     }
+
 
 
     function colorGridCell(grid, level, isCorrect) {
