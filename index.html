@@ -1,592 +1,661 @@
-<!DOCTYPE HTML>
-<!--
-	Dimension by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
-<html>
-	<head>
-		<title>Ishan F. Ghosh-Coutinho</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-		<link rel="icon" href="/favicon.ico" type="image/x-icon">
-		<style>
-			/* CSS for the hover dropdown */
-			.hover-section .content {
-			    max-height: 0; /* Completely hidden */
-			    overflow: hidden; /* Hide anything beyond max-height */
-			    transition: max-height 0.4s ease-out; /* Smooth transition */
-			    background-color: transparent; /* Ensure transparency */
-			    color: white; /* Make sure text is visible on dark backgrounds */
-			    padding: 0; /* Remove padding when not expanded */
-			}
-			
-			/* On hover, reveal the content */
-			.hover-section:hover .content {
-			    max-height: 200px; /* Adjust to the content size you need */
-			    padding: 10px; /* Add padding once expanded */
-			}
-			
-			.hover-section h3 {
-			    cursor: pointer;
-			    margin-bottom: 5px;
-			    color: white; /* Ensure the heading is visible */
-			}
-			
-			/* Optional: Add a border or shadow to make content stand out */
-			.hover-section .content {
-			    margin-top: 5px;
-			    border-left: 2px solid #fff; /* White border for contrast */
-			}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gamepad Tester & Game Board</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        #status { margin: 20px; font-size: 20px; color: green; }
+        .gamepad-info { margin-top: 20px; display: flex; justify-content: center; gap: 20px; }
+        .game-info {
+          display: flex;
+          justify-content: center;
+          gap: 20px;
+          font-size: 18px;
+          margin: 10px 0;
+        }
 
-		</style>
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-	</head>
-	<body class="is-preload">
+        .axis-box, .slider-box, .yaw-indicator, .buttons-box, .hat-switch {
+            border: 2px solid black;
+            padding: 10px;
+            min-width: 100px;
+            text-align: center;
+            display: inline-block;
+        }
+        #status { margin: 20px; font-size: 20px; color: green; }
+        .container { display: flex; height: 100vh; }
+        .panel { flex: 1; border: 1px solid #ccc; padding: 20px; overflow: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        canvas { border: 1px solid black; }
+        .yaw-indicator {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: lightgray;
+            transform: rotate(0deg);
+        }
+        .button-box { display: flex; justify-content: center; gap: 20px; }
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 40px);
+            grid-template-rows: repeat(3, 40px);
+            gap: 5px;
+            justify-content: center;
+        }
+        .side-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 40px);
+            grid-template-rows: repeat(2, 40px);
+            gap: 5px;
+        }
+        .button { width: 40px; height: 40px; border-radius: 5px; background-color: lightgray; display: flex; align-items: center; justify-content: center; }
+        .button.active { background-color: red; }
+        .hat-display {
+            display: grid;
+            grid-template-columns: repeat(3, 30px);
+            grid-template-rows: repeat(3, 30px);
+            grid-gap: 5px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .hat-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: lightgray;
+        }
+        .hat-dot.active { background-color: yellow; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Panel: Gamepad Tester -->
+        <div id="leftPanel" class="panel">
+       
+       
 
-		<!-- Wrapper -->
-			<div id="wrapper">
+          <h1>Gamepad Tester</h1>
+          <p id="status">Connect a USB gamepad and press any button.</p>
+          <div class="game-info">
+            <span>Target: <span id="target-location">None</span></span> |
+            <span>Selected Grid: <span id="selected-grid">None</span></span> |
+            <span>Current Level: <span id="selected-level">None</span></span>
+          </div>
 
-				<!-- Header -->
-					<header id="header">
-						<div class="content">
-							<div class="inner">
-								<h1>Ishan F. Ghosh-Coutinho</h1>
-								<h4>Undergradaute B.S., in University of Washington, Department of Astronomy</h4>
-								<h4>Undergradaute Minor in Fine Arts, University of Washington, School of Drama</h4>
-								<h4 style="color:red;"> <b style="color:red;"> This site is under construction, please forgive any incomplete sections, outdated information, bugs, etc. </b></h4>
-								<p><a href="images/CV.pdf" target="_blank">Curriculum Vitae</a></p>
-								<img src="images/IFGC_logo.png" width="325px">
-							</div>
-						</div>
-						<nav>
-							<ul>
-								<li><a href="#Intro">Intro</a></li>
-								<li><a href="#Astronomy">Astronomy</a></li>
-								<li><a href="#Theatre">Theatre</a></li>
-								<li><a href="#Outreach">Outreach</a></li>
-								<li><a href="#Contact">Contact</a></li>
-								<!--<li><a href="#elements">Elements</a></li>-->
-							</ul>
-						</nav>
-					</header>
+          <button id="startGameButton">Start Game</button>
+          <button id="resetGameButton" style="display: none;">Reset Game</button>
+          
+          <div class="gamepad-info">
+              <div class="axis-box">
+                  <h3>X / Y Axis</h3>
+                  <p id="axis-xy">(0.00, 0.00)</p>
+              </div>
+              <div class="slider-box">
+                  <h3>Z Slider</h3>
+                  <p id="slider">0.00</p>
+              </div>
+              <div class="yaw-indicator" id="yaw-indicator"></div>
+          </div>
+          
+          <h2>Buttons</h2>
+          <div class="button-box">
+              <div class="side-grid" id="left-buttons"></div>
+              <div class="button-grid" id="center-buttons"></div>
+              <div class="side-grid" id="right-buttons"></div>
+          </div>
+          
+          <h2>Hat Switch</h2>
+          <div class="hat-display" id="hat-switch">
+              <div class="hat-dot" id="hat-9"></div>
+              <div class="hat-dot" id="hat-1"></div>
+              <div class="hat-dot" id="hat-2"></div>
+              <div class="hat-dot" id="hat-8"></div>
+              <div class="hat-dot active" id="hat-5"></div>
+              <div class="hat-dot" id="hat-3"></div>
+              <div class="hat-dot" id="hat-7"></div>
+              <div class="hat-dot" id="hat-6"></div>
+              <div class="hat-dot" id="hat-4"></div>
+          </div>
+          
+          <script>
+              
+          
+              function renderButtons() {
+                  document.getElementById("left-buttons").innerHTML = buttonMapping.left.map(num => `<div class='button' id='btn-${num}'>${num}</div>`).join('');
+                  document.getElementById("right-buttons").innerHTML = buttonMapping.right.map(num => `<div class='button' id='btn-${num}'>${num}</div>`).join('');
+                  document.getElementById("center-buttons").innerHTML = `
+                      <div></div><div class='button' id='btn-1'>1</div><div></div>
+                      <div class='button' id='btn-3'>3</div><div></div><div class='button' id='btn-4'>4</div>
+                      <div></div><div class='button' id='btn-2'>2</div><div></div>
+                  `;
+              }
+          
+              window.addEventListener("gamepadconnected", (event) => {
+                  document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
+                  renderButtons();
+                  updateGamepadState();
+              });
+          
+              function updateGamepadState() {
+                  let gamepads = navigator.getGamepads();
+                  if (gamepads[0]) {
+                      let gp = gamepads[0];
+          
+                      // Update axes and slider
+                      document.getElementById("axis-xy").innerText = `(${gp.axes[0].toFixed(2)}, ${(-gp.axes[1]).toFixed(2)})`;
+                      document.getElementById("slider").innerText = gp.axes[6] ? (-gp.axes[6]).toFixed(2) : "N/A";
+          
+                      // Update yaw indicator
+                      let wAxis = gp.axes[5] ? gp.axes[5].toFixed(2) : "0.00";
+                      document.getElementById("yaw-indicator").style.transform = `rotate(${(-wAxis) * 45}deg)`;
+          
+                      // Update buttons
+                      gp.buttons.forEach((btn, index) => {
+                          let btnElement = document.getElementById(`btn-${index + 1}`);
+                          if (btnElement) {
+                              btnElement.classList.toggle("active", btn.pressed);
+                          }
+                      });
+          
+                      // Update hat switch
+                      document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
+                      let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
+                      if (hatPositions[pov]) {
+                          document.getElementById(hatPositions[pov]).classList.add("active");
+                      } else {
+                          document.getElementById("hat-5").classList.add("active");
+                      }
+                  }
+                  requestAnimationFrame(updateGamepadState);
+              }
+          </script>
+        </div>
+        
+        <!-- Right Panel: Game Board -->
+        <div id="rightPanel" class="panel">
+            <h1>Game Board</h1>
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+        </div>
+    </div>
 
-				<!-- Main -->
-					<div id="main">
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
 
-						<!-- Intro -->
-							<article id="Intro">
-								<h2 class="major">Intro</h2>
-								<!-- <span class="image main"><img src="images/pic01.jpg" alt="" /></span> -->
-								
-								<p><b>Education:</b> B.S.: University of Washington (2024)</p>
-								<p><b>Published Works:</b> <a href="https://ui.adsabs.harvard.edu/search/filter_bibstem_facet_fq_bibstem_facet=NOT&filter_bibstem_facet_fq_bibstem_facet=*%3A*&filter_bibstem_facet_fq_bibstem_facet=bibstem_facet%3A%22zndo%22&fq=%7B!type%3Daqp%20v%3D%24fq_database%7D&fq=%7B!type%3Daqp%20v%3D%24fq_bibstem_facet%7D&fq_bibstem_facet=(*%3A*%20NOT%20bibstem_facet%3A%22zndo%22)&fq_database=(database%3Aastronomy%20OR%20database%3Aphysics)&q=author%3A%22%5EIshan%20Ghosh-Coutinho%22&sort=date%20desc%2C%20bibcode%20desc&p_=0">ADS Author Query</a></p>
-								<p><b>Research Interests:</b> Massive Stars, Stellar Populations, Stelar Evolution, Emmison Line Objects, Transients, Galactic Evolution, AGNs, Spectroscopy, Time Domain Studies, Machine Learning, LSST</p>
+    function drawHexagonWithExtensions() {
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+    const centerX = canvasWidth / 2;
+    const centerY = canvasHeight / 2;
+    const hexSize = 50;
+    const extensionLength = 80;
+    const angleStep = -Math.PI / 3;
+    let points = [];
 
-								<p><b>About Me:</b> I am a recent gradute at the University of Wahshington.
-								I studied Astronomy (Major), with a research focus on massive stars and stellar populations via stellar spectroscopy, machine learning applications, and time domain studies.
-								I have also studied Design for Performance (Minor), with a focus on Design for Theatre and Costume Design.
-								I am broadly interested in stars, and have learned a multitude of methods  &#8212; from  
-								stellar population synthesis to spectroscopy and time domain analyses, to machine learning &#8212; 
-								to the end of working on research centered around preparing for the upcoming era of Big Data in Astronomy and the Next-Generation Observatories such as JWST, Vera C. Ruben, and the Roman Space Telescope.
-								</p>
-								<p>
-								On this site, you can learn more about my research <a href="#Astronomy">here</a>, or see my <a href="#Outreach">outreach work</a> and/or my <a href="#Theatre">theatre and design</a> projects. If you'd like to reach 
-								out with a question, or if you would like me to give a talk at your institution, please see my <a href="#contact">contact info</a>.</p>
-								
-							</article>
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-						<!-- Work -->
-							<article id="Astronomy">
-								<h2 class="major">Astronomy</h2>
-								<!-- <span class="image main"><img src="images/pic02.jpg" alt="" /></span> -->
-								
-								<p>
-								  My current research interests lie in understanding Massive Stars. Massive stars represent the extremes of stellar evolution. They 
-								serve as laboratories for studying stellar evolution and various 
-								astrophysical phenomena exhibit a wide range of exotic evolutionary stages, 
-								and are the sites of key physical processes that shape the Universe.
-								Their short lifetimes and intrinsic rarity make them a unique challenge to
-								study. My current research interest is in understanding massive stellar
-								evolution through spectroscopic and time-domain analysis to constrain the
-								impact on their local environments. 
-								</p>
-								<p>
-								Long term, I hope to work on characterizing massive stellar evolution, particularly 
-								from progenitors into exotic evolutionary states (WR, TZO, LBV, FPYSG, Hydrogen Emmison Stars (OBe, OB[e], Herbig, etc), etc)
-								and using spectroscopic and time-domain analysis to better constrain the impact of factors like rotation, dust, mass loss, magnetic fields, internal mixing, binary interactions, etc on stellar evolution.
-								I would like to characterize how these processes across the last populations of massive stars impact their local environment and host galaxies. A lot of my research has been centered around 
-								preparing for the upcoming era of Big Data in Astronomy and the Next-Generation Observatories such as JWST, Vera C. Ruben, and the Roman Space Telescope.
-								</p>
-								<p>
-								I am currently working on projects aimed to scale to the Legacy Survey of Space and Time using data from the Gaia
-								mission, Apache Point Observatory Galactic Evolution Experiment, and the Zwicky Transient Facility to learn how to characterize and extrapolate 
-								luminosity class of cool stars (<4500 K) 
-							 If you'd be 
-								intrested in collaborating with me, please see my <a href="#contact">contact info</a>.
-								<img src="images/DiRAC_UWMSG.png" width="575px", style="float:left; margin-right: 20px;" > 
+    // Compute hexagon vertices
+    for (let i = 0; i < 6; i++) {
+        let angle = angleStep * i;
+        let x = centerX + hexSize * Math.cos(angle);
+        let y = centerY + hexSize * Math.sin(angle);
+        points.push({ x, y });
+    }
 
-								</p>
-								
-							</article>
+    // Draw hexagon
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'orange';
+    ctx.fill();
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    ctx.stroke();
 
-						<!-- Outreach -->
-							<article id="Outreach">
-							    <h2 class="major">Outreach and Service</h2>
-							
-							    <div class="hover-section">
-							        <h3>Mentoring</h3>
-							        <div class="content">
-							            <p>Details about Mentoring.</p>
-							        </div>
-							    </div>
-							
-							    <div class="hover-section">
-							        <h3>Tutoring</h3>
-							        <div class="content">
-							            <p>Details about Tutoring.</p>
-							        </div>
-							    </div>
-							
-							    <div class="hover-section">
-							        <h3>Public Talks</h3>
-							        <div class="content">
-							            <p>Details about Public Talks.</p>
-							        </div>
-							    </div>
-							
-							    <div class="hover-section">
-							        <h3>Planetarium Shows</h3>
-							        <div class="content">
-							            <p>Details about Planetarium Shows.</p>
-							        </div>
-							    </div>
-							
-							    <div class="hover-section">
-							        <h3>Public Service</h3>
-							        <div class="content">
-							            <p>Details about Public Service.</p>
-							        </div>
-							    </div>
-							</article>
+    // Step 1: Apply the custom remapping first
+    const originalLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+    const labelMap = {
+        'A': 'J', 'B': 'I', 'C': 'K', 'D': 'L', 
+        'E': 'A', 'F': 'B', 'G': 'C', 'H': 'D', 
+        'I': 'F', 'J': 'E', 'K': 'H', 'L': 'G'
+    };
 
-							<!-- Theatre -->
-							<!-- Theatre -->
-							<article id="Theatre">
-								<h2 class="portfolio-title">Theatre Design</h2>
-							  
-								<br> <h2 style="color:red;">[This page is incomplete because it is Under Construction]</h2>
-								<p>
-							        Beyond Astronomy, I studied Theatre Design, focusing on costume design. 
-								Some of the designs I created during the program are below.  </p>
-							        
-							        <br>My full portfolio is available here [Under Construction]
-								<!-- <span class="image main"><img src="images/pic02.jpg" alt="" /></span> -->
-								<h3><i>Airness</i> &mdash; Lead Costume Designer  </h3>
-								<h3> <i>The Moors </i>  &mdash; Assistant Costume Designer </h3>
-								<h3> <i> She Kills Monsters </i>  &mdash; Costume Design Lab </h3>
-								<h3> Raine Whisper, <i>The Owl House </i> &mdash; Costume Construction Lab </h3>
-								<h3> Misc. Costume Designs </h3>
-								<h3> Misc. Designs and Art</h3>
-								    
-								
-								
-							</article>
-							<article id="Theatre-inDev">
+    // Apply remapping
+    let remappedLabels = originalLabels.map(label => labelMap[label]);
 
-								
-							    <h2 class="portfolio-title">Theatre Design</h2>
-							    <p>
-							        Beyond Astronomy, I study Theatre Design, focusing on costume design. Some of my designs are below.
-							        <br>[Under Construction]
-							        <br>My full portfolio is available here [Under Construction]
-							    </p>
-							    <h3>"She Kills Monsters" (Designs) PLACE HOLDER IMAGES</h3>
-							    <div class="projects">
-							        <div class="project">
-							            <div class="project-images">
-					               			<img src="images/project1/IMG_0620.png" alt="Project 1 Image 1">
-							                <img src="images/project1/IMG_0632.png" alt="Project 1 Image 2">
-							                <img src="images/project1/IMG_0636.png" alt="Project 1 Image 3">
-									<img src="images/project1/IMG_0620.png" alt="Project 1 Image 1">
-							                <img src="images/project1/IMG_0632.png" alt="Project 1 Image 2">
-							                <img src="images/project1/IMG_0636.png" alt="Project 1 Image 3">
-									<img src="images/project1/IMG_0620.png" alt="Project 1 Image 1">
-							                <img src="images/project1/IMG_0632.png" alt="Project 1 Image 2">
-							                <img src="images/project1/IMG_0636.png" alt="Project 1 Image 3">
-								    </div>
-							            <div class="project-title">Project 1</div>
-							        </div>
-							        <h3>"Airness" (Designs)</h3>   
-							        <div class="project">
-							            <div class="project-images">
-							                <img src="images/project2/IMG_0299.jpeg" alt="Project 2 Image 1">
-							                <img src="images/project2/IMG_0355.jpeg" alt="Project 2 Image 2">
-							                <img src="images/project2/IMG_0513.jpeg" alt="Project 2 Image 3">
-									<img src="images/project2/IMG_0529.jpeg" alt="Project 2 Image 4">
-							                <img src="images/project2/IMG_0599.png" alt="Project 2 Image 5">
-							                <img src="images/project2/IMG_0610.gif" alt="Project 2 Image 6">
-							            </div>
-							            <div class="project-title">Project 2</div>
-							        </div>
-								<h3>"Airness" (Costumes)</h3>
-							        <div class="project">
-							            <div class="project-images">
-							                <img src="images/project3/image1.jpg" alt="Project 3 Image 1">
-							                <img src="images/project3/image2.jpg" alt="Project 3 Image 2">
-							                <img src="images/project3/image3.jpg" alt="Project 3 Image 3">
-							            </div>
-							            <div class="project-title">Project 3</div>
-							        </div>
-							    </div>
-							</article>
+    // Step 2: Shift each pair 2 grids to the RIGHT
+    let shiftedLabels = [
+        remappedLabels[8], remappedLabels[9],  // I -> moves to first grid
+        remappedLabels[10], remappedLabels[11], // K -> moves to second grid
+        remappedLabels[0], remappedLabels[1],  // A -> moves to third grid
+        remappedLabels[2], remappedLabels[3],  // C -> moves to fourth grid
+        remappedLabels[4], remappedLabels[5],  // E -> moves to fifth grid
+        remappedLabels[6], remappedLabels[7]   // G -> moves to sixth grid
+    ];
 
+    // Grid numbering (AB=1, CD=2, ..., KL=6)
+    const gridNumbers = [1, 2, 3, 4, 5, 6];
 
-							<!-- Styles for Theatre Section -->
-							<style>
-							    #Theatre {
-							        padding: 20px;
-							    }
-							    .portfolio-title {
-							        font-size: 24px;
-							        margin-bottom: 10px;
-							    }
-							    .projects {
-							        display: flex;
-							        flex-direction: column;
-							        gap: 20px;
-							    }
-							    .project {
-							        background: #f4f4f4;
-							        padding: 10px;
-							        border-radius: 10px;
-							        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-							        text-align: center;
-							    }
-							    .project-images {
-							        display: flex;
-							        overflow-x: auto;
-							        gap: 10px;
-							        padding: 10px 0;
-							    }
-							    .project img {
-							        height: 300px; /* Set a fixed height */
-							        width: auto; /* Keep the aspect ratio */
-							        border-radius: 10px;
-							    }
-							    .project-title {
-							        font-size: 18px;
-							        margin-top: 10px;
-							    }
-							</style>
+    for (let i = 0; i < 6; i++) {
+        let midX = (points[i].x + points[(i + 1) % 6].x) / 2;
+        let midY = (points[i].y + points[(i + 1) % 6].y) / 2;
+        let angle = Math.atan2(midY - centerY, midX - centerX);
 
+        let endX = midX + extensionLength * Math.cos(angle);
+        let endY = midY + extensionLength * Math.sin(angle);
 
+        // Draw extension line
+        ctx.beginPath();
+        ctx.moveTo(midX, midY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
 
-						<!-- Contact -->
-							<article id="Contact">
-								<h2 class="major">Contact</h2>
-								<p>If you have any questions about my work, feel free to reach out.
-								I am also available to speak at your institution, and am always happy
-								to give public outreach talks.</p>
-								<p> <b>Email:</b></p>
-								<p>
-								  ifc2002@uw.edu
-								</p>
-								<p> <b>Address:</b> </p>
-								<p>
-								  Department of Astronomy<br> 
-								University of Washington<br> 
-								Physics-Astronomy Bldg, Room C319<br> 
-								Box 351580<br>Seattle, WA 98195-1700
-								</p>
-<!--								<form method="post" action="#">
-									<div class="fields">
-										<div class="field half">
-											<label for="name">Name</label>
-											<input type="text" name="name" id="name" />
-										</div>
-										<div class="field half">
-											<label for="email">Email</label>
-											<input type="text" name="email" id="email" />
-										</div>
-										<div class="field">
-											<label for="message">Message</label>
-											<textarea name="message" id="message" rows="4"></textarea>
-										</div>
-									</div>
-									<ul class="actions">
-										<li><input type="submit" value="Send Message" class="primary" /></li>
-										<li><input type="reset" value="Reset" /></li>
-									</ul>
-								</form>
--->
-								<ul class="icons">
-<!-- 									<li><a href="https://bsky.app/profile/trevorzaylen.bsky.social" class="icon fa-at"><span class="label">Blue Sky</span></a></li>
-									<li><a href="https://instagram.com/trevor_zaylen" class="icon fa-instagram"><span class="label">Instagram</span></a></li> -->
-									<li><a href="https://github.com/ifgc" class="icon fa-github"><span class="label">GitHub</span></a></li>
-								</ul>
-							</article>
+        // Assign labels based on REMAPPED and SHIFTED order
+        drawGrid(endX, endY, angle, shiftedLabels[i * 2], shiftedLabels[i * 2 + 1]);
 
-						<!-- Elements -->
-							<article id="elements">
-								<h2 class="major">Elements</h2>
+        // Draw grid number next to each grid
+        let numberX = endX + 20 * Math.cos(angle);
+        let numberY = endY + 20 * Math.sin(angle);
 
-								<section>
-									<h3 class="major">Text</h3>
-									<p>This is <b>bold</b> and this is <strong>strong</strong>. This is <i>italic</i> and this is <em>emphasized</em>.
-									This is <sup>superscript</sup> text and this is <sub>subscript</sub> text.
-									This is <u>underlined</u> and this is code: <code>for (;;) { ... }</code>. Finally, <a href="#">this is a link</a>.</p>
-									<hr />
-									<h2>Heading Level 2</h2>
-									<h3>Heading Level 3</h3>
-									<h4>Heading Level 4</h4>
-									<h5>Heading Level 5</h5>
-									<h6>Heading Level 6</h6>
-									<hr />
-									<h4>Blockquote</h4>
-									<blockquote>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan faucibus. Vestibulum ante ipsum primis in faucibus lorem ipsum dolor sit amet nullam adipiscing eu felis.</blockquote>
-									<h4>Preformatted</h4>
-									<pre><code>i = 0;
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(gridNumbers[i], numberX, numberY);
+    }
+}
+    
+function drawGrid(x, y, angle, label1, label2) {
+    const gridWidth = 20;
+    const gridHeight = 20;
+    const cols = 2;  // Two columns per grid
+    const rows = 4;  // Four rows per grid
 
-while (!deck.isInOrder()) {
-    print 'Iteration ' + i;
-    deck.shuffle();
-    i++;
+    // List of labels that should be flipped
+    const labelsToFlip = ['A', 'B', 'C', 'D', 'K', 'L']; // Specify grids that should be flipped
+
+    // Check if either column label is in the flip list
+    const shouldFlip = labelsToFlip.includes(label1) || labelsToFlip.includes(label2);
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle + Math.PI / 2); // Rotate normally
+
+    if (shouldFlip) {
+        ctx.rotate(Math.PI); // Flip the text orientation
+    }
+
+    for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+            let cellX = i * gridWidth - (cols / 2) * gridWidth;
+            let cellY = j * gridHeight - (rows / 2) * gridHeight;
+
+            // Draw grid cell
+            ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
+
+            // Assign labels (Ensure numbers always have 1 near the hex and 4 far)
+            let colLabel = i === 0 ? label1 : label2; // Left column = label1, Right column = label2
+            let rowLabel = shouldFlip ? (j + 1) : (rows - j); // **Fix: Keep numbering correct**
+
+            // Draw label
+            ctx.fillStyle = "black";
+            ctx.font = "12px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(colLabel + rowLabel, cellX + gridWidth / 2, cellY + gridHeight / 2);
+        }
+    }
+
+    ctx.restore();
 }
 
-print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
-								</section>
+    // Draw everything
+    drawHexagonWithExtensions();
 
-								<section>
-									<h3 class="major">Lists</h3>
 
-									<h4>Unordered</h4>
-									<ul>
-										<li>Dolor pulvinar etiam.</li>
-										<li>Sagittis adipiscing.</li>
-										<li>Felis enim feugiat.</li>
-									</ul>
+    </script>
+    <script>
+    let hatSwitchMap = "left"; // Default to left mapping
+    const hatGrids = {
+        left: { "-1.00": "A", "-0.71": "C", "-0.43": "E", "-0.14": "G", "3.92": "I", "0.14": "K" },
+        right: { "-1.00": "B", "-0.71": "D", "-0.43": "F", "-0.14": "H", "3.92": "J", "0.14": "L" }
+    };
+    
+    function updateHatGridSelection(pov) {
+        if (hatGrids[hatSwitchMap][pov]) {
+            gameState.selectedGrid = hatGrids[hatSwitchMap][pov];
+            safeUpdateText("selected-grid", gameState.selectedGrid);
+        }
+    }
+    
+    window.addEventListener("gamepadconnected", (event) => {
+        document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
+        updateGamepadState();
+    });
+    function getGridNumber(gridLetter) {
+      const gridMapping = {
+          'A': 1, 'B': 1, 
+          'C': 2, 'D': 2, 
+          'E': 3, 'F': 3, 
+          'G': 4, 'H': 4, 
+          'I': 5, 'J': 5, 
+          'K': 6, 'L': 6
+      };
+      return gridMapping[gridLetter] || null;
+  }
 
-									<h4>Alternate</h4>
-									<ul class="alt">
-										<li>Dolor pulvinar etiam.</li>
-										<li>Sagittis adipiscing.</li>
-										<li>Felis enim feugiat.</li>
-									</ul>
+    function checkGameState() {
+      if (!gameState.loaded) {
+          document.getElementById("status").innerText = "You must load first!";
+          resetGame();
+          return;
+      }
+      
+      if (!gameState.selectedLevel) {
+          document.getElementById("status").innerText = "You must select a level before scoring!";
+          resetGame();
+          return;
+      }
+  
+      // Extract target number (1-6) from the grid
+      const targetGridNumber = getGridNumber(gameState.targetGrid);
+      const selectedGridNumber = getGridNumber(gameState.selectedGrid);
+  
+      // Check only level and grid number (ignoring letter)
+      if (gameState.selectedLevel !== gameState.targetLevel || selectedGridNumber !== targetGridNumber) {
+          document.getElementById("status").innerText = `Incorrect! Target was ${gameState.targetGrid}${gameState.targetLevel}, but selected ${gameState.selectedGrid}${gameState.selectedLevel}`;
+          resetGame();
+          return;
+      }
+  
+      // Success! Score and generate new target.
+      document.getElementById("status").innerText = `Success! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
+      generateNewTarget();
+  }
 
-									<h4>Ordered</h4>
-									<ol>
-										<li>Dolor pulvinar etiam.</li>
-										<li>Etiam vel felis viverra.</li>
-										<li>Felis enim feugiat.</li>
-										<li>Dolor pulvinar etiam.</li>
-										<li>Etiam vel felis lorem.</li>
-										<li>Felis enim et feugiat.</li>
-									</ol>
-									<h4>Icons</h4>
-									<ul class="icons">
-										<li><a href="https://bsky.app/profile/trevorzaylen.bsky.social" class="fa-solid fa-cloud-sun"><span class="label">Blue Sky</span></a></li>
-										<li><a href="instagram.com/trevor_zaylen" class="icon fa-instagram"><span class="label">Instagram</span></a></li>
-										<li><a href="github.com/tzdwi" class="icon fa-github"><span class="label">Github</span></a></li>
-									</ul>
 
-									<h4>Actions</h4>
-									<ul class="actions">
-										<li><a href="#" class="button primary">Default</a></li>
-										<li><a href="#" class="button">Default</a></li>
-									</ul>
-									<ul class="actions stacked">
-										<li><a href="#" class="button primary">Default</a></li>
-										<li><a href="#" class="button">Default</a></li>
-									</ul>
-								</section>
 
-								<section>
-									<h3 class="major">Table</h3>
-									<h4>Default</h4>
-									<div class="table-wrapper">
-										<table>
-											<thead>
-												<tr>
-													<th>Name</th>
-													<th>Description</th>
-													<th>Price</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<td>Item One</td>
-													<td>Ante turpis integer aliquet porttitor.</td>
-													<td>29.99</td>
-												</tr>
-												<tr>
-													<td>Item Two</td>
-													<td>Vis ac commodo adipiscing arcu aliquet.</td>
-													<td>19.99</td>
-												</tr>
-												<tr>
-													<td>Item Three</td>
-													<td> Morbi faucibus arcu accumsan lorem.</td>
-													<td>29.99</td>
-												</tr>
-												<tr>
-													<td>Item Four</td>
-													<td>Vitae integer tempus condimentum.</td>
-													<td>19.99</td>
-												</tr>
-												<tr>
-													<td>Item Five</td>
-													<td>Ante turpis integer aliquet porttitor.</td>
-													<td>29.99</td>
-												</tr>
-											</tbody>
-											<tfoot>
-												<tr>
-													<td colspan="2"></td>
-													<td>100.00</td>
-												</tr>
-											</tfoot>
-										</table>
-									</div>
+    let gameRunning = false;
+    function safeUpdateText(id, text) {
+      let element = document.getElementById(id);
+      if (element) {
+          element.innerText = text;
+      }
+    }
 
-									<h4>Alternate</h4>
-									<div class="table-wrapper">
-										<table class="alt">
-											<thead>
-												<tr>
-													<th>Name</th>
-													<th>Description</th>
-													<th>Price</th>
-												</tr>
-											</thead>
-											<tbody>
-												<tr>
-													<td>Item One</td>
-													<td>Ante turpis integer aliquet porttitor.</td>
-													<td>29.99</td>
-												</tr>
-												<tr>
-													<td>Item Two</td>
-													<td>Vis ac commodo adipiscing arcu aliquet.</td>
-													<td>19.99</td>
-												</tr>
-												<tr>
-													<td>Item Three</td>
-													<td> Morbi faucibus arcu accumsan lorem.</td>
-													<td>29.99</td>
-												</tr>
-												<tr>
-													<td>Item Four</td>
-													<td>Vitae integer tempus condimentum.</td>
-													<td>19.99</td>
-												</tr>
-												<tr>
-													<td>Item Five</td>
-													<td>Ante turpis integer aliquet porttitor.</td>
-													<td>29.99</td>
-												</tr>
-											</tbody>
-											<tfoot>
-												<tr>
-													<td colspan="2"></td>
-													<td>100.00</td>
-												</tr>
-											</tfoot>
-										</table>
-									</div>
-								</section>
 
-								<section>
-									<h3 class="major">Buttons</h3>
-									<ul class="actions">
-										<li><a href="#" class="button primary">Primary</a></li>
-										<li><a href="#" class="button">Default</a></li>
-									</ul>
-									<ul class="actions">
-										<li><a href="#" class="button">Default</a></li>
-										<li><a href="#" class="button small">Small</a></li>
-									</ul>
-									<ul class="actions">
-										<li><a href="#" class="button primary icon fa-download">Icon</a></li>
-										<li><a href="#" class="button icon fa-download">Icon</a></li>
-									</ul>
-									<ul class="actions">
-										<li><span class="button primary disabled">Disabled</span></li>
-										<li><span class="button disabled">Disabled</span></li>
-									</ul>
-								</section>
+    function startGame() {
+        if (!gameRunning) {
+            gameRunning = true;
+            resetGame();
+            generateNewTarget();
+            document.getElementById("status").innerText = "Game Started! Follow the target instructions.";
+            document.getElementById("startGameButton").innerText = "Stop Game";
+            document.getElementById("resetGameButton").style.display = "none"; // Hide Reset button
+    
+            updateGamepadState(); // Start listening to gamepad input
+        } else {
+            stopGame();
+        }
+    }
 
-								<section>
-									<h3 class="major">Form</h3>
-									<form method="post" action="#">
-										<div class="fields">
-											<div class="field half">
-												<label for="demo-name">Name</label>
-												<input type="text" name="demo-name" id="demo-name" value="" placeholder="Jane Doe" />
-											</div>
-											<div class="field half">
-												<label for="demo-email">Email</label>
-												<input type="email" name="demo-email" id="demo-email" value="" placeholder="jane@untitled.tld" />
-											</div>
-											<div class="field">
-												<label for="demo-category">Category</label>
-												<select name="demo-category" id="demo-category">
-													<option value="">-</option>
-													<option value="1">Manufacturing</option>
-													<option value="1">Shipping</option>
-													<option value="1">Administration</option>
-													<option value="1">Human Resources</option>
-												</select>
-											</div>
-											<div class="field half">
-												<input type="radio" id="demo-priority-low" name="demo-priority" checked>
-												<label for="demo-priority-low">Low</label>
-											</div>
-											<div class="field half">
-												<input type="radio" id="demo-priority-high" name="demo-priority">
-												<label for="demo-priority-high">High</label>
-											</div>
-											<div class="field half">
-												<input type="checkbox" id="demo-copy" name="demo-copy">
-												<label for="demo-copy">Email me a copy</label>
-											</div>
-											<div class="field half">
-												<input type="checkbox" id="demo-human" name="demo-human" checked>
-												<label for="demo-human">Not a robot</label>
-											</div>
-											<div class="field">
-												<label for="demo-message">Message</label>
-												<textarea name="demo-message" id="demo-message" placeholder="Enter your message" rows="6"></textarea>
-											</div>
-										</div>
-										<ul class="actions">
-											<li><input type="submit" value="Send Message" class="primary" /></li>
-											<li><input type="reset" value="Reset" /></li>
-										</ul>
-									</form>
-								</section>
 
-							</article>
+    function stopGame() {
+        gameRunning = false;
+      
+        let statusElement = document.getElementById("status");
+        if (statusElement) statusElement.innerText = "Game Stopped. Normal gamepad input displayed.";
+      
+        let startButton = document.getElementById("startGameButton");
+        if (startButton) startButton.innerText = "Start Game";
+      
+        let resetButton = document.getElementById("resetGameButton");
+        if (resetButton) resetButton.style.display = "block"; // Show Reset button
+      
+        gameState.selectedGrid = null;
+        gameState.selectedLevel = null;
+        gameState.loaded = false;
+        gameState.targetGrid = null;
+        gameState.targetLevel = null;
+      
+        let gridElement = document.getElementById("selected-grid");
+        if (gridElement) gridElement.innerText = "None";
+      
+        let levelElement = document.getElementById("selected-level");
+        if (levelElement) levelElement.innerText = "None";
+      
+        let targetElement = document.getElementById("target-location");
+        if (targetElement) targetElement.innerText = "None";
+      
+        document.querySelectorAll(".button.active").forEach(button => button.classList.remove("active"));
+        document.querySelectorAll(".hat-dot.active").forEach(dot => dot.classList.remove("active"));
+    
+        // Restart polling when game stops
+        updateGamepadStateWhenStopped();
+    }
 
-					</div>
 
-				<!-- Footer -->
-					<footer id="footer">
-						<p class="copyright">&copy; Ishan F. Ghosh-Coutinho. Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
-					</footer>
+    let gameState = {
+        selectedGrid: null,
+        selectedLevel: null,
+        loaded: false,
+        targetGrid: null,
+        targetLevel: null,
+        gridState: {}, // Tracks which grid cells have been scored
+    };
 
-			</div>
+    function generateNewTarget() {
+        // Pick a random grid and level as the next target
+        const grids = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        const levels = [1, 2, 3, 4];
+        gameState.targetGrid = grids[Math.floor(Math.random() * grids.length)];
+        gameState.targetLevel = levels[Math.floor(Math.random() * levels.length)];
+    
+        // Update UI
+        safeUpdateText("target-location", `${gameState.targetGrid}${gameState.targetLevel}`);
+        document.getElementById("status").innerText = `Next Target: ${gameState.targetGrid}${gameState.targetLevel}`;
+    }
 
-		<!-- BG -->
-			<div id="bg"></div>
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
+    function checkGameState() {
+        if (!gameState.loaded) {
+            document.getElementById("status").innerText = "You must load first!";
+            resetGame();
+            return;
+        }
+        if (!gameState.selectedGrid || !gameState.selectedLevel) {
+            document.getElementById("status").innerText = "You must select a grid and level before scoring!";
+            resetGame();
+            return;
+        }
+        if (gameState.selectedGrid !== gameState.targetGrid || gameState.selectedLevel !== gameState.targetLevel) {
+            document.getElementById("status").innerText = `Incorrect! Target was ${gameState.targetGrid}${gameState.targetLevel}, but selected ${gameState.selectedGrid}${gameState.selectedLevel}`;
+            resetGame();
+            return;
+        }
+    
+        // Score the grid cell
+        let cellId = `${gameState.selectedGrid}${gameState.selectedLevel}`;
+        if (!gameState.gridState[cellId]) {
+            gameState.gridState[cellId] = true;
+            colorGridCell(gameState.selectedGrid, gameState.selectedLevel);
+        } else {
+            document.getElementById("status").innerText = "Grid is full! Game Over.";
+            resetGame();
+            return;
+        }
+    
+        // Success! Generate new target.
+        document.getElementById("status").innerText = `Success! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
+        generateNewTarget();
+    }
 
-	</body>
+
+
+    function resetGame() {
+        gameState = {
+            selectedGrid: null,
+            selectedLevel: null,
+            loaded: false,
+            targetGrid: null,
+            targetLevel: null,
+            gridState: {}
+        };
+        document.getElementById("status").innerText = "Game Over! Press Start to play again.";
+        document.getElementById("resetGameButton").style.display = "block"; // Show Reset button
+    }
+
+
+    function colorGridCell(grid, level) {
+        let cells = document.querySelectorAll(`.grid-cell[data-grid="${grid}"][data-level="${level}"]`);
+        if (cells.length === 0) return; // Prevent errors
+        cells.forEach(cell => cell.style.backgroundColor = "green");
+
+    }
+
+    window.addEventListener("gamepadconnected", (event) => {
+        document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
+        generateNewTarget(); // Start with the first target
+        updateGamepadState();
+        });
+    function updateGamepadState() {
+        let gamepads = navigator.getGamepads();
+        if (!gamepads || !gamepads[0]) return;
+      
+        let gp = gamepads[0];
+    
+        // Always update gamepad UI, even if the game is stopped
+        document.getElementById("axis-xy").innerText = `(${gp.axes[0].toFixed(2)}, ${(-gp.axes[1]).toFixed(2)})`;
+        document.getElementById("slider").innerText = gp.axes[6] ? (-gp.axes[6]).toFixed(2) : "N/A";
+        let wAxis = gp.axes[5] ? gp.axes[5].toFixed(2) : "0.00";
+        document.getElementById("yaw-indicator").style.transform = `rotate(${(-wAxis) * 45}deg)`;
+    
+        gp.buttons.forEach((btn, index) => {
+            let btnElement = document.getElementById(`btn-${index + 1}`);
+            if (btnElement) {
+                btnElement.classList.toggle("active", btn.pressed);
+            }
+        });
+    
+        document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
+        let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
+        if (hatPositions[pov]) {
+            document.getElementById(hatPositions[pov]).classList.add("active");
+        } else {
+            document.getElementById("hat-5").classList.add("active");
+        }
+    
+        // If game is running, check game logic
+        if (gameRunning) {
+            if (gp.buttons[4].pressed) gameState.selectedLevel = 1;
+            if (gp.buttons[5].pressed) gameState.selectedLevel = 2;
+            if (gp.buttons[6].pressed) gameState.selectedLevel = 3;
+            if (gp.buttons[10].pressed) gameState.selectedLevel = 4;
+    
+            safeUpdateText("selected-level", gameState.selectedLevel || "None");
+    
+            if (gp.buttons[1].pressed) {
+                gameState.loaded = true;
+                safeUpdateText("status", "Loaded!");
+            }
+    
+            if (gp.buttons[0].pressed) {
+                checkGameState();
+            }
+    
+            if (hatGrids[pov]) {
+                gameState.selectedGrid = hatGrids[pov];
+                safeUpdateText("selected-grid", gameState.selectedGrid);
+            }
+        }
+
+    requestAnimationFrame(updateGamepadState);
+}
+
+    const buttonMapping = {
+    left: [5, 6, 7, 10, 9, 8],
+    center: [1, 3, 4, 2],
+    right: [13, 12, 11, 14, 15, 16]
+};
+
+    const hatPositions = {
+        "-1.00": "hat-1",
+        "-0.71": "hat-2",
+        "-0.43": "hat-3",
+        "-0.14": "hat-4",
+        "3.92": "hat-5",
+        "0.14": "hat-6",
+        "0.43": "hat-7",
+        "0.71": "hat-8",
+        "1.00": "hat-9"
+    };
+    
+    function renderButtons() {
+        document.getElementById("left-buttons").innerHTML = buttonMapping.left.map(num => `<div class='button' id='btn-${num}'>${num}</div>`).join('');
+        document.getElementById("right-buttons").innerHTML = buttonMapping.right.map(num => `<div class='button' id='btn-${num}'>${num}</div>`).join('');
+        document.getElementById("center-buttons").innerHTML = `
+            <div></div><div class='button' id='btn-1'>1</div><div></div>
+            <div class='button' id='btn-3'>3</div><div></div><div class='button' id='btn-4'>4</div>
+            <div></div><div class='button' id='btn-2'>2</div><div></div>
+        `;
+    }
+    
+    // Start the button rendering when the gamepad connects
+    window.addEventListener("gamepadconnected", (event) => {
+        document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
+        renderButtons();
+        updateGamepadStateWhenStopped();
+    });
+    
+    function updateGamepadStateWhenStopped() {
+        if (gameRunning) return; // Only run when game is NOT active
+    
+        let gamepads = navigator.getGamepads();
+        if (gamepads[0]) {
+            let gp = gamepads[0];
+    
+            // Update axes and slider
+            document.getElementById("axis-xy").innerText = `(${gp.axes[0].toFixed(2)}, ${(-gp.axes[1]).toFixed(2)})`;
+            document.getElementById("slider").innerText = gp.axes[6] ? (-gp.axes[6]).toFixed(2) : "N/A";
+    
+            // Update yaw indicator
+            let wAxis = gp.axes[5] ? gp.axes[5].toFixed(2) : "0.00";
+            document.getElementById("yaw-indicator").style.transform = `rotate(${(-wAxis) * 45}deg)`;
+    
+            // Update buttons
+            gp.buttons.forEach((btn, index) => {
+                let btnElement = document.getElementById(`btn-${index + 1}`);
+                if (btnElement) {
+                    btnElement.classList.toggle("active", btn.pressed);
+                }
+            });
+    
+            // Update hat switch
+            document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
+            let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
+            if (hatPositions[pov]) {
+                document.getElementById(hatPositions[pov]).classList.add("active");
+            } else {
+                document.getElementById("hat-5").classList.add("active");
+            }
+        }
+    
+        // Keep updating **only if the game is NOT running**
+        if (!gameRunning) {
+            requestAnimationFrame(updateGamepadStateWhenStopped);
+        }
+    }
+
+
+
+  document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("startGameButton").addEventListener("click", startGame);
+      document.getElementById("resetGameButton").addEventListener("click", resetGame);
+  });
+
+</script>
+
+</body>
 </html>
