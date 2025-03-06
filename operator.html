@@ -66,6 +66,38 @@
             background-color: lightgray;
         }
         .hat-dot.active { background-color: yellow; }
+        .scoring-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 40px);
+            grid-template-rows: repeat(4, 40px);
+            gap: 5px;
+            justify-content: center;
+            margin-top: 20px;
+            align-self: center; /* Ensures it centers inside the right panel */
+        }
+        .grid-button {
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid black;
+          background-color: lightgray;
+          font-weight: bold;
+      }
+      
+      .grid-button.correct {
+          background-color: green;
+          color: white;
+      }
+      
+      .grid-button.wrong {
+          background-color: red;
+          color: white;
+      }
+
+
+
     </style>
 </head>
 <body>
@@ -124,92 +156,134 @@
           
           <script>
               
+          let gameState = {
+              selectedGrid: null,
+              selectedLevel: null,
+              loaded: false,
+              targetGrid: null,
+              targetLevel: null,
+              gridState: {}, 
+              totalScore: 0, // New tracking for total score
+              correctScore: 0 // New tracking for correct placements
+          };
+              
           
-              function renderButtons() {
-                  document.getElementById("left-buttons").innerHTML = buttonMapping.left.map(num => `<div class='button' id='btn-${num}'>${num}</div>`).join('');
-                  document.getElementById("right-buttons").innerHTML = buttonMapping.right.map(num => `<div class='button' id='btn-${num}'>${num}</div>`).join('');
-                  document.getElementById("center-buttons").innerHTML = `
-                      <div></div><div class='button' id='btn-1'>1</div><div></div>
-                      <div class='button' id='btn-3'>3</div><div></div><div class='button' id='btn-4'>4</div>
-                      <div></div><div class='button' id='btn-2'>2</div><div></div>
-                  `;
+          function renderButtons() {
+              document.getElementById("left-buttons").innerHTML = buttonMapping.left.map(num => `<div class='button' id='btn-${num}'>${num}</div>`).join('');
+              document.getElementById("right-buttons").innerHTML = buttonMapping.right.map(num => `<div class='button' id='btn-${num}'>${num}</div>`).join('');
+              document.getElementById("center-buttons").innerHTML = `
+                  <div></div><div class='button' id='btn-1'>1</div><div></div>
+                  <div class='button' id='btn-3'>3</div><div></div><div class='button' id='btn-4'>4</div>
+                  <div></div><div class='button' id='btn-2'>2</div><div></div>
+              `;
+          }
+
+            function renderScoringGrid() {
+              let scoringGrid = document.getElementById("scoring-grid");
+              let labelsX = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+              let labelsY = [1, 2, 3, 4];
+          
+              scoringGrid.innerHTML = ""; // Clear existing grid
+          
+              for (let row of labelsY) {
+                  for (let col of labelsX) {
+                      let cellKey = `${col}${row}`;
+                      let button = document.createElement("div");
+                      button.classList.add("grid-button");
+                      button.id = `grid-${cellKey}`;
+                      button.innerText = cellKey;
+          
+                      // Restore previous color if scored
+                      if (gameState.gridState[cellKey]) {
+                          button.classList.add(gameState.gridState[cellKey] === "green" ? "correct" : "wrong");
+                      }
+          
+                      scoringGrid.appendChild(button);
+                  }
               }
-          
-              window.addEventListener("gamepadconnected", (event) => {
-                  document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
-                  renderButtons();
-                  updateGamepadState();
-              });
-          
-              function updateGamepadState() {
-                let gamepads = navigator.getGamepads();
-                if (!gamepads || !gamepads[0]) return;
-            
-                let gp = gamepads[0];
-            
-                // Always update gamepad UI, even if the game is stopped
-                document.getElementById("axis-xy").innerText = `(${gp.axes[0].toFixed(2)}, ${(-gp.axes[1]).toFixed(2)})`;
-                document.getElementById("slider").innerText = gp.axes[6] ? (-gp.axes[6]).toFixed(2) : "N/A";
-                let wAxis = gp.axes[5] ? gp.axes[5].toFixed(2) : "0.00";
-                document.getElementById("yaw-indicator").style.transform = `rotate(${(-wAxis) * 45}deg)`;
-            
-                gp.buttons.forEach((btn, index) => {
-                    let btnElement = document.getElementById(`btn-${index + 1}`);
-                    if (btnElement) {
-                        btnElement.classList.toggle("active", btn.pressed);
-                    }
-                });
-            
-                document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
-                let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
-                if (hatPositions[pov]) {
-                    document.getElementById(hatPositions[pov]).classList.add("active");
-                } else {
-                    document.getElementById("hat-5").classList.add("active");
+          }
+
+
+           
+
+      
+          window.addEventListener("gamepadconnected", (event) => {
+              document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
+              renderButtons();
+              updateGamepadState();
+          });
+      
+          function updateGamepadState() {
+            let gamepads = navigator.getGamepads();
+            if (!gamepads || !gamepads[0]) return;
+        
+            let gp = gamepads[0];
+        
+            // Always update gamepad UI, even if the game is stopped
+            document.getElementById("axis-xy").innerText = `(${gp.axes[0].toFixed(2)}, ${(-gp.axes[1]).toFixed(2)})`;
+            document.getElementById("slider").innerText = gp.axes[6] ? (-gp.axes[6]).toFixed(2) : "N/A";
+            let wAxis = gp.axes[5] ? gp.axes[5].toFixed(2) : "0.00";
+            document.getElementById("yaw-indicator").style.transform = `rotate(${(-wAxis) * 45}deg)`;
+        
+            gp.buttons.forEach((btn, index) => {
+                let btnElement = document.getElementById(`btn-${index + 1}`);
+                if (btnElement) {
+                    btnElement.classList.toggle("active", btn.pressed);
                 }
-            
-                // If game is running, check game logic
-                if (gameRunning) {
-                    if (gp.buttons[4].pressed) gameState.selectedLevel = 1;
-                    if (gp.buttons[5].pressed) gameState.selectedLevel = 2;
-                    if (gp.buttons[6].pressed) gameState.selectedLevel = 3;
-                    if (gp.buttons[10].pressed) gameState.selectedLevel = 4;
-            
-                    safeUpdateText("selected-level", gameState.selectedLevel || "None");
-            
-                    if (gp.buttons[1].pressed) {
-                        gameState.loaded = true;
-                        safeUpdateText("status", "Loaded!");
-                    }
-            
-                    // Fix: Call checkGameState() only once per button press
-                    if (gp.buttons[0].pressed) {
-                        if (!buttonState.scoreButton) { // If button was not already pressed
-                            checkGameState();
-                            buttonState.scoreButton = true; // Mark button as pressed
-                        }
-                    } else {
-                        buttonState.scoreButton = false; // Reset when button is released
-                    }
-            
-                    if (hatGrids[pov]) {
-                        gameState.selectedGrid = hatGrids[pov];
-                        safeUpdateText("selected-grid", gameState.selectedGrid);
-                    }
-                }
-            
-                requestAnimationFrame(updateGamepadState);
+            });
+        
+            document.querySelectorAll(".hat-dot").forEach(dot => dot.classList.remove("active"));
+            let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
+            if (hatPositions[pov]) {
+                document.getElementById(hatPositions[pov]).classList.add("active");
+            } else {
+                document.getElementById("hat-5").classList.add("active");
             }
+        
+            // If game is running, check game logic
+            if (gameRunning) {
+                if (gp.buttons[4].pressed) gameState.selectedLevel = 1;
+                if (gp.buttons[5].pressed) gameState.selectedLevel = 2;
+                if (gp.buttons[6].pressed) gameState.selectedLevel = 3;
+                if (gp.buttons[10].pressed) gameState.selectedLevel = 4;
+        
+                safeUpdateText("selected-level", gameState.selectedLevel || "None");
+        
+                if (gp.buttons[1].pressed) {
+                    gameState.loaded = true;
+                    safeUpdateText("status", "Loaded!");
+                }
+        
+                // Fix: Call checkGameState() only once per button press
+                if (gp.buttons[0].pressed) {
+                    if (!buttonState.scoreButton) { // If button was not already pressed
+                        checkGameState();
+                        buttonState.scoreButton = true; // Mark button as pressed
+                    }
+                } else {
+                    buttonState.scoreButton = false; // Reset when button is released
+                }
+        
+                if (hatGrids[pov]) {
+                    gameState.selectedGrid = hatGrids[pov];
+                    safeUpdateText("selected-grid", gameState.selectedGrid);
+                }
+            }
+        
+            requestAnimationFrame(updateGamepadState);
+        }
 
           </script>
         </div>
         
-        <!-- Right Panel: Game Board -->
-        <div id="rightPanel" class="panel">
-            <h1>Game Board</h1>
-            <canvas id="gameCanvas" width="400" height="400"></canvas>
-        </div>
-    </div>
+      <!-- Right Panel: Game Board -->
+      <div id="rightPanel" class="panel">
+          <h1>Game Board</h1>
+          <canvas id="gameCanvas" width="400" height="400"></canvas>
+      
+          <h2>Scoring Grid</h2>
+          <div id="scoring-grid" class="scoring-grid"></div>
+      </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -219,9 +293,9 @@
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
         const centerX = canvasWidth / 2;
-        const centerY = canvasHeight / 2;
+        const centerY = (1.2*canvasHeight / 4);
         const hexSize = 50;
-        const extensionLength = 80;
+        const extensionLength = 40;
         const angleStep = -Math.PI / 3;
         let points = [];
     
@@ -288,6 +362,8 @@
 
         // Assign labels based on REMAPPED and SHIFTED order
         drawGrid(endX, endY, angle, shiftedLabels[i * 2], shiftedLabels[i * 2 + 1]);
+        //drawGridTable();
+
 
         // Draw grid number next to each grid
         let numberX = endX + 20 * Math.cos(angle);
@@ -297,52 +373,90 @@
         ctx.font = "16px Arial";
         ctx.textAlign = "center";
         ctx.fillText(gridNumbers[i], numberX, numberY);
+      
     }
+      // drawGridTable();
 }
+    // function drawGridTable() {
+    //     const gridStartX = canvas.width / 2 - (12 * 30) / 2; // Center horizontally
+    //     const gridStartY = canvas.height - 160; // Adjust lower
+    //     const cellWidth = 30;
+    //     const cellHeight = 30;
+    //     const labelsX = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+    //     const labelsY = [1, 2, 3, 4];
     
-function drawGrid(x, y, angle, label1, label2) {
-    const gridWidth = 20;
-    const gridHeight = 20;
-    const cols = 2;  // Two columns per grid
-    const rows = 4;  // Four rows per grid
+    //     for (let col = 0; col < 12; col++) {
+    //         for (let row = 0; row < 4; row++) {
+    //             let x = gridStartX + col * cellWidth;
+    //             let y = gridStartY + row * cellHeight;
+    //             let cellKey = `${labelsX[col]}${labelsY[row]}`;
+    
+    //             // Clear the cell before applying a new color
+    //             ctx.clearRect(x, y, cellWidth, cellHeight);
+    
+    //             // Check if the cell has been scored and apply the stored color
+    //             ctx.fillStyle = gameState.gridState[cellKey] || "white"; // Default to white if uncolored
+    //             ctx.fillRect(x, y, cellWidth, cellHeight); // Fill the cell
+    
+    //             // Draw grid border
+    //             ctx.strokeStyle = "black";
+    //             ctx.strokeRect(x, y, cellWidth, cellHeight);
+    
+    //             // Draw text label
+    //             ctx.fillStyle = "black";
+    //             ctx.font = "14px Arial";
+    //             ctx.textAlign = "center";
+    //             ctx.textBaseline = "middle";
+    //             ctx.fillText(cellKey, x + cellWidth / 2, y + cellHeight / 2);
+    //         }
+    //     }
+    // }
 
-    // List of labels that should be flipped
-    const labelsToFlip = ['A', 'B', 'C', 'D', 'K', 'L']; // Specify grids that should be flipped
 
-    // Check if either column label is in the flip list
-    const shouldFlip = labelsToFlip.includes(label1) || labelsToFlip.includes(label2);
-
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(angle + Math.PI / 2); // Rotate normally
-
-    if (shouldFlip) {
-        ctx.rotate(Math.PI); // Flip the text orientation
-    }
-
-    for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-            let cellX = i * gridWidth - (cols / 2) * gridWidth;
-            let cellY = j * gridHeight - (rows / 2) * gridHeight;
-
-            // Draw grid cell
-            ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
-
-            // Assign labels (Ensure numbers always have 1 near the hex and 4 far)
-            let colLabel = i === 0 ? label1 : label2; // Left column = label1, Right column = label2
-            let rowLabel = shouldFlip ? (j + 1) : (rows - j); // **Fix: Keep numbering correct**
-
-            // Draw label
-            ctx.fillStyle = "black";
-            ctx.font = "12px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(colLabel + rowLabel, cellX + gridWidth / 2, cellY + gridHeight / 2);
+    
+    function drawGrid(x, y, angle, label1, label2) {
+        const gridWidth = 20;
+        const gridHeight = 20;
+        const cols = 2;  // Two columns per grid
+        const rows = 4;  // Four rows per grid
+    
+        // List of labels that should be flipped
+        const labelsToFlip = ['A', 'B', 'C', 'D', 'K', 'L']; // Specify grids that should be flipped
+    
+        // Check if either column label is in the flip list
+        const shouldFlip = labelsToFlip.includes(label1) || labelsToFlip.includes(label2);
+    
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle + Math.PI / 2); // Rotate normally
+    
+        if (shouldFlip) {
+            ctx.rotate(Math.PI); // Flip the text orientation
         }
-    }
-
-    ctx.restore();
-}
+    
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                let cellX = i * gridWidth - (cols / 2) * gridWidth;
+                let cellY = j * gridHeight - (rows / 2) * gridHeight;
+    
+                // Draw grid cell
+                ctx.strokeRect(cellX, cellY, gridWidth, gridHeight);
+    
+                // Assign labels (Ensure numbers always have 1 near the hex and 4 far)
+                let colLabel = i === 0 ? label1 : label2; // Left column = label1, Right column = label2
+                let rowLabel = shouldFlip ? (j + 1) : (rows - j); // **Fix: Keep numbering correct**
+    
+                // Draw label
+                ctx.fillStyle = "black";
+                ctx.font = "12px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(colLabel + rowLabel, cellX + gridWidth / 2, cellY + gridHeight / 2);
+          }
+      }
+  
+      ctx.restore();
+  }
 
     // Draw everything
     drawHexagonWithExtensions();
@@ -380,6 +494,9 @@ function drawGrid(x, y, angle, label1, label2) {
   }
 
     function checkGameState() {
+        console.log("Selected Grid:", gameState.selectedGrid);  // Should be A-L
+        console.log("Selected Level:", gameState.selectedLevel);  // Should be 1-4
+    
         if (!gameState.loaded) {
             document.getElementById("status").innerText = "You must load first!";
             return;
@@ -389,23 +506,31 @@ function drawGrid(x, y, angle, label1, label2) {
             return;
         }
     
-        gameState.totalScore++; // Always increase total score
-        document.getElementById("total-score").innerText = gameState.totalScore; // Update UI
+        gameState.totalScore++; 
+        document.getElementById("total-score").innerText = gameState.totalScore;
     
         let isCorrect = gameState.selectedGrid === gameState.targetGrid && gameState.selectedLevel === gameState.targetLevel;
         
+        let correctCellKey = `${gameState.targetGrid}${gameState.targetLevel}`;  
+        let selectedCellKey = `${gameState.selectedGrid}${gameState.selectedLevel}`;
+    
+        console.log("Attempting to color cell:", selectedCellKey);
+    
         if (isCorrect) {
-            gameState.correctScore++; // Increase correct score if correct
-            document.getElementById("correct-score").innerText = gameState.correctScore; // Update UI
-            colorGridCell(gameState.selectedGrid, gameState.selectedLevel, true);
+            gameState.correctScore++;
+            document.getElementById("correct-score").innerText = gameState.correctScore;
+            colorGridCell(correctCellKey, isCorrect);
             document.getElementById("status").innerText = `Correct! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
         } else {
-            colorGridCell(gameState.selectedGrid, gameState.selectedLevel, false);
-            document.getElementById("status").innerText = `Wrong! You scored at ${gameState.selectedGrid}${gameState.selectedLevel} instead of ${gameState.targetGrid}${gameState.targetLevel}.`;
+            colorGridCell(selectedCellKey, isCorrect);
+            document.getElementById("status").innerText = `Wrong! You scored at ${selectedCellKey} instead of ${correctCellKey}.`;
         }
     
-        generateNewTarget(); // Always move to the next target
+        generateNewTarget();
     }
+
+
+
 
 
     let gameRunning = false;
@@ -415,6 +540,26 @@ function drawGrid(x, y, angle, label1, label2) {
           element.innerText = text;
       }
     }
+     function colorGridCell(cellKey, isCorrect) {
+        // Validate cellKey format (one letter + one digit)
+        if (!cellKey || !/^[A-L][1-4]$/.test(cellKey)) {
+            console.error("Invalid cell key:", cellKey);
+            return;
+        }
+    
+        let button = document.getElementById(`grid-${cellKey}`);
+        console.log(`Attempting to color cell ${cellKey} - Found:`, button ? "Yes" : "No");
+    
+        if (button) {
+            button.classList.remove("correct", "wrong");
+            button.classList.add(isCorrect ? "correct" : "wrong");
+    
+            gameState.gridState[cellKey] = isCorrect ? "green" : "red";
+        } else {
+            console.error(`Cell ${cellKey} not found in the document.`);
+        }
+    }
+
 
 
     function startGame() {
@@ -467,18 +612,6 @@ function drawGrid(x, y, angle, label1, label2) {
         updateGamepadStateWhenStopped();
     }
 
-
-    let gameState = {
-        selectedGrid: null,
-        selectedLevel: null,
-        loaded: false,
-        targetGrid: null,
-        targetLevel: null,
-        gridState: {}, 
-        totalScore: 0, // New tracking for total score
-        correctScore: 0 // New tracking for correct placements
-    };
-
     let buttonState = {
         scoreButton: false, // Tracks whether button 1 has already been pressed
     };
@@ -520,12 +653,47 @@ function drawGrid(x, y, angle, label1, label2) {
     }
 
 
+    
+      function checkGameState() {
+          console.log("Selected Level:", gameState.selectedLevel); // Ensure level is set
+          console.log("Target Grid:", gameState.targetGrid); // Ensure target grid is set
+          
+          if (!gameState.loaded) {
+              document.getElementById("status").innerText = "You must load first!";
+              return;
+          }
+          if (!gameState.selectedLevel) {
+              document.getElementById("status").innerText = "You must select a level before scoring!";
+              return;
+          }
+      
+          gameState.totalScore++;
+          document.getElementById("total-score").innerText = gameState.totalScore;
+      
+          let correctCellKey = `${gameState.targetGrid}${gameState.targetLevel}`;
+          let selectedCellKey = `${gameState.targetGrid[0]}${gameState.selectedLevel}`; // First letter of target grid + selected level
+      
+          console.log("Attempting to color cell:", selectedCellKey);
+      
+          let isCorrect = correctCellKey === selectedCellKey; 
+      
+          if (isCorrect) {
+              gameState.correctScore++;
+              document.getElementById("correct-score").innerText = gameState.correctScore;
+              colorGridCell(correctCellKey, true);
+              document.getElementById("status").innerText = `Correct! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
+          } else {
+              colorGridCell(selectedCellKey, false);
+              document.getElementById("status").innerText = `Wrong! You scored at ${selectedCellKey} instead of ${correctCellKey}.`;
+          }
+      
+          generateNewTarget();
+      }
 
-    function colorGridCell(grid, level, isCorrect) {
-        let cells = document.querySelectorAll(`.grid-cell[data-grid="${grid}"][data-level="${level}"]`);
-        if (cells.length === 0) return; // Prevent errors
-        cells.forEach(cell => cell.style.backgroundColor = isCorrect ? "green" : "red");
-    }
+
+
+
+
 
 
     window.addEventListener("gamepadconnected", (event) => {
@@ -620,6 +788,31 @@ function drawGrid(x, y, angle, label1, label2) {
             <div></div><div class='button' id='btn-2'>2</div><div></div>
         `;
     }
+    function renderScoringGrid() {
+        let scoringGrid = document.getElementById("scoring-grid");
+        let labelsX = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L'];
+        let labelsY = [1, 2, 3, 4];
+    
+        scoringGrid.innerHTML = ""; // Clear existing grid
+    
+        for (let row of labelsY) {
+            for (let col of labelsX) {
+                let cellKey = `${col}${row}`;
+                let button = document.createElement("div");
+                button.classList.add("grid-button");
+                button.id = `grid-${cellKey}`;
+                button.innerText = cellKey;
+    
+                // Restore previous color if scored
+                if (gameState.gridState[cellKey]) {
+                    button.classList.add(gameState.gridState[cellKey] === "green" ? "correct" : "wrong");
+                }
+    
+                scoringGrid.appendChild(button);
+            }
+        }
+    }
+
     
     // Start the button rendering when the gamepad connects
     window.addEventListener("gamepadconnected", (event) => {
@@ -672,11 +865,11 @@ function drawGrid(x, y, angle, label1, label2) {
   document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("startGameButton").addEventListener("click", startGame);
       document.getElementById("resetGameButton").addEventListener("click", resetGame);
+      renderScoringGrid(); // ✅ Ensure the grid renders when the page loads
   });
 
 </script>
 
 </body>
 </html>
-
 
