@@ -324,8 +324,15 @@ function drawGrid(x, y, angle, label1, label2) {
     };
     
     function updateHatGridSelection(pov) {
-        if (hatGrids[hatSwitchMap][pov]) {
-            gameState.selectedGrid = hatGrids[hatSwitchMap][pov];
+        let closestValue = Object.keys(hatGrids[hatSwitchMap])
+            .reduce((prev, curr) => Math.abs(curr - pov) < Math.abs(prev - pov) ? curr : prev);
+        
+        if (hatGrids[hatSwitchMap][closestValue]) {
+            gameState.selectedGrid = hatGrids[hatSwitchMap][closestValue];
+            safeUpdateText("selected-grid", gameState.selectedGrid);
+        } else {
+            // Default to center if unrecognized
+            gameState.selectedGrid = hatGrids[hatSwitchMap]["3.92"];
             safeUpdateText("selected-grid", gameState.selectedGrid);
         }
     }
@@ -345,12 +352,13 @@ function drawGrid(x, y, angle, label1, label2) {
         if (gp.buttons[2].pressed) hatSwitchMap = "left";
         if (gp.buttons[3].pressed) hatSwitchMap = "right";
     
-        // Get hat switch value and update selection
-        let pov = gp.axes[9] ? gp.axes[9].toFixed(2) : "3.92";
+        // Get hat switch value, round it to nearest expected value
+        let pov = gp.axes[9] ? (Math.round(gp.axes[9] * 10) / 10).toFixed(2) : "3.92";
         updateHatGridSelection(pov);
     
         requestAnimationFrame(updateGamepadState);
     }
+
 
 
     let gameRunning = false;
