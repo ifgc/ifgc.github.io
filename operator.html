@@ -350,24 +350,21 @@ function drawGrid(x, y, angle, label1, label2) {
     function checkGameState() {
       if (!gameState.loaded) {
           document.getElementById("status").innerText = "You must load first!";
-          resetGame();
           return;
       }
       
       if (!gameState.selectedLevel) {
           document.getElementById("status").innerText = "You must select a level before scoring!";
-          resetGame();
           return;
       }
   
-      // Extract target number (1-6) from the grid
+      // ✅ Extract target number (1-6) from the grid
       const targetGridNumber = getGridNumber(gameState.targetGrid);
       const selectedGridNumber = getGridNumber(gameState.selectedGrid);
   
-      // Check only level and grid number (ignoring letter)
+      // ✅ Check only level and grid number (ignoring letter)
       if (gameState.selectedLevel !== gameState.targetLevel || selectedGridNumber !== targetGridNumber) {
           document.getElementById("status").innerText = `Incorrect! Target was ${gameState.targetGrid}${gameState.targetLevel}, but selected ${gameState.selectedGrid}${gameState.selectedLevel}`;
-          resetGame();
           return;
       }
   
@@ -375,6 +372,7 @@ function drawGrid(x, y, angle, label1, label2) {
       document.getElementById("status").innerText = `Success! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
       generateNewTarget();
   }
+
 
 
 
@@ -444,8 +442,11 @@ function drawGrid(x, y, angle, label1, label2) {
         loaded: false,
         targetGrid: null,
         targetLevel: null,
-        gridState: {}, // Tracks which grid cells have been scored
+        gridState: {}, 
+        totalScore: 0, // New tracking for total score
+        correctScore: 0 // New tracking for correct placements
     };
+
 
     function generateNewTarget() {
         // Pick a random grid and level as the next target
@@ -463,35 +464,31 @@ function drawGrid(x, y, angle, label1, label2) {
     function checkGameState() {
         if (!gameState.loaded) {
             document.getElementById("status").innerText = "You must load first!";
-            resetGame();
+           
             return;
         }
         if (!gameState.selectedGrid || !gameState.selectedLevel) {
             document.getElementById("status").innerText = "You must select a grid and level before scoring!";
-            resetGame();
-            return;
-        }
-        if (gameState.selectedGrid !== gameState.targetGrid || gameState.selectedLevel !== gameState.targetLevel) {
-            document.getElementById("status").innerText = `Incorrect! Target was ${gameState.targetGrid}${gameState.targetLevel}, but selected ${gameState.selectedGrid}${gameState.selectedLevel}`;
-            resetGame();
+   
             return;
         }
     
-        // Score the grid cell
-        let cellId = `${gameState.selectedGrid}${gameState.selectedLevel}`;
-        if (!gameState.gridState[cellId]) {
-            gameState.gridState[cellId] = true;
-            colorGridCell(gameState.selectedGrid, gameState.selectedLevel);
+        gameState.totalScore++; // Always increment total score
+    
+        let isCorrect = gameState.selectedGrid === gameState.targetGrid && gameState.selectedLevel === gameState.targetLevel;
+        
+        if (isCorrect) {
+            gameState.correctScore++; // Only increment correct score if correct
+            colorGridCell(gameState.selectedGrid, gameState.selectedLevel, true); // Color correct cell
+            document.getElementById("status").innerText = `Correct! Total: ${gameState.totalScore}, Correct: ${gameState.correctScore}`;
         } else {
-            document.getElementById("status").innerText = "Grid is full! Game Over.";
-            resetGame();
-            return;
+            colorGridCell(gameState.selectedGrid, gameState.selectedLevel, false); // Mark incorrect cell
+            document.getElementById("status").innerText = `Wrong! You scored at ${gameState.selectedGrid}${gameState.selectedLevel} instead of ${gameState.targetGrid}${gameState.targetLevel}. Total: ${gameState.totalScore}, Correct: ${gameState.correctScore}`;
         }
     
-        // Success! Generate new target.
-        document.getElementById("status").innerText = `Success! Next target: ${gameState.targetGrid}${gameState.targetLevel}`;
-        generateNewTarget();
+        generateNewTarget(); // Always generate a new target after an attempt
     }
+
 
 
 
@@ -509,12 +506,12 @@ function drawGrid(x, y, angle, label1, label2) {
     }
 
 
-    function colorGridCell(grid, level) {
+    function colorGridCell(grid, level, isCorrect) {
         let cells = document.querySelectorAll(`.grid-cell[data-grid="${grid}"][data-level="${level}"]`);
         if (cells.length === 0) return; // Prevent errors
-        cells.forEach(cell => cell.style.backgroundColor = "green");
-
+        cells.forEach(cell => cell.style.backgroundColor = isCorrect ? "green" : "red");
     }
+
 
     window.addEventListener("gamepadconnected", (event) => {
         document.getElementById("status").innerText = "Gamepad Connected: " + event.gamepad.id;
@@ -660,3 +657,5 @@ function drawGrid(x, y, angle, label1, label2) {
 
 </body>
 </html>
+
+
