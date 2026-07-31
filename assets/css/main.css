@@ -1791,8 +1791,8 @@ input, select, textarea {
 
 /* theatre designs dropdown */
 
-.hover-section.theatre-designs:hover .content,
-.hover-section.theatre-designs:focus-within .content {
+.hover-section.theatre-project:hover .content,
+.hover-section.theatre-project:focus-within .content {
 	max-height: 2000px;
 	padding: 10px;
 }
