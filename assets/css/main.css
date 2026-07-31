@@ -1791,12 +1791,42 @@ input, select, textarea {
 
 /* theatre project dropdowns */
 
+/* theatre project dropdowns */
+
+.hover-section.theatre-project {
+	margin-bottom: 0.75rem;
+}
+
+.hover-section.theatre-project .content {
+	max-height: 0;
+	padding: 0;
+	overflow: hidden;
+	opacity: 0;
+
+	transition:
+		max-height 0.3s ease-in,
+		padding 0.3s ease-in,
+		opacity 0.2s ease-in;
+
+	transition-delay: 0s;
+}
+
 .hover-section.theatre-project:hover .content,
 .hover-section.theatre-project:focus-within .content {
 	max-height: 2000px;
 	padding: 10px;
-}
+	opacity: 1;
 
+	transition:
+		max-height 0.45s ease-out,
+		padding 0.35s ease-out,
+		opacity 0.25s ease-out;
+
+	transition-delay:
+		0.3s,
+		0.3s,
+		0.3s;
+}
 
 /* grid inside each theatre production */
 
