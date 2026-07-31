@@ -1789,10 +1789,32 @@ input, select, textarea {
 
 }
 
-/* theatre designs dropdown */
+/* theatre project dropdowns */
 
 .hover-section.theatre-project:hover .content,
 .hover-section.theatre-project:focus-within .content {
 	max-height: 2000px;
 	padding: 10px;
+}
+
+
+/* grid inside each theatre production */
+
+.theatre-subgrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 1rem;
+	width: 100%;
+}
+
+
+/* smaller theatre sub-page cards */
+
+.theatre-subcard {
+	display: block;
+	aspect-ratio: 3 / 2;
+}
+
+.theatre-subcard .research-card-overlay h3 {
+	font-size: 0.9rem;
 }
