@@ -1668,6 +1668,12 @@ input, select, textarea {
 	border: 0.25rem solid rgba(255, 255, 255, 0.65);
 	border-radius: 1rem;
 	background-color: rgba(255, 255, 255, 0.075);
+	background-image:
+		linear-gradient(
+			135deg,
+			rgba(255, 255, 255, 0.12),
+			rgba(0, 0, 0, 0.3)
+		);
 	box-shadow: 0 0.5rem 1.25rem rgba(0, 0, 0, 0.3);
 	cursor: pointer;
 	transition:
@@ -1677,24 +1683,28 @@ input, select, textarea {
 }
 
 
-/* project images */
+/* optional project image */
 
-.research-card img {
-	display: block;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
+.research-card::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background-image: var(--project-image, none);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
 	transition:
 		transform 0.4s ease,
 		filter 0.4s ease;
 }
 
 
-/* for dark gradient behind the title */
+/* dark gradient behind the title */
 
 .research-card-overlay {
 	position: absolute;
 	inset: 0;
+	z-index: 1;
 	display: flex;
 	align-items: flex-end;
 	padding: 1.25rem;
@@ -1722,7 +1732,7 @@ input, select, textarea {
 }
 
 
-/* Hoverrrrr */
+/* hover */
 
 .research-card:hover {
 	transform: translateY(-0.35rem);
@@ -1730,13 +1740,13 @@ input, select, textarea {
 	box-shadow: 0 0.9rem 1.75rem rgba(0, 0, 0, 0.45);
 }
 
-.research-card:hover img {
+.research-card:hover::before {
 	transform: scale(1.06);
 	filter: brightness(0.75);
 }
 
 
-/* ipad layout */
+/* tablet layout */
 
 @media screen and (max-width: 736px) {
 
@@ -1760,7 +1770,8 @@ input, select, textarea {
 
 }
 
-/* for phone */
+
+/* phone layout */
 
 @media screen and (max-width: 480px) {
 
